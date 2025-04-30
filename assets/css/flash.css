@@ -1,0 +1,22 @@
+/* Flash Message for Upload Success */
+.flash-message {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #32d74b;
+    padding: 0.75rem 1.5rem;
+    margin-top: 1rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: inline-block;
+    pointer-events: none;
+  }
+  
+  .flash-message.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  

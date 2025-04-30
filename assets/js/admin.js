@@ -4,8 +4,8 @@
 // ========================
 
 // --- Configuration ---
-const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "password";
+const ADMIN_USERNAME = "CJBanco";
+const ADMIN_PASSWORD = "IAmMusic";
 const UPLOAD_SECRET = "seegraysvision_secret";
 const SERVER_UPLOAD_URL = "http://127.0.0.1:5000/upload";
 
@@ -19,7 +19,7 @@ const SERVER_UPLOAD_URL = "http://127.0.0.1:5000/upload";
 function showFlashMessage(message, isError = false) {
   const flash = document.getElementById("upload-flash");
   flash.textContent = message;
-  
+
   if (isError) {
     flash.style.backgroundColor = "#d93025"; // Red for error
   } else {
@@ -59,33 +59,35 @@ function handleLogin(event) {
  * Sends image to server with authorization.
  */
 function handleUpload(event) {
-    event.preventDefault();
-  
-    const fileInput = document.getElementById("photo");
-    const titleInput = document.getElementById("photo-title").value.trim();
-    const tagsInput = document.getElementById("photo-tags").value.trim();
-    const descriptionInput = document.getElementById("photo-description").value.trim();
-  
-    if (fileInput.files.length === 0) {
-      showFlashMessage("❌ Please select a file to upload.", true);
-      return;
-    }
-  
-    const formData = new FormData();
-    formData.append("photo", fileInput.files[0]);
-    formData.append("title", titleInput);
-    formData.append("tags", tagsInput);
-    formData.append("description", descriptionInput);
-  
-    fetch(SERVER_UPLOAD_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": UPLOAD_SECRET
-      },
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
+  event.preventDefault();
+
+  const fileInput = document.getElementById("photo");
+  const titleInput = document.getElementById("photo-title").value.trim();
+  const tagsInput = document.getElementById("photo-tags").value.trim();
+  const descriptionInput = document
+    .getElementById("photo-description")
+    .value.trim();
+
+  if (fileInput.files.length === 0) {
+    showFlashMessage("❌ Please select a file to upload.", true);
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("photo", fileInput.files[0]);
+  formData.append("title", titleInput);
+  formData.append("tags", tagsInput);
+  formData.append("description", descriptionInput);
+
+  fetch(SERVER_UPLOAD_URL, {
+    method: "POST",
+    headers: {
+      Authorization: UPLOAD_SECRET,
+    },
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
       if (data.success) {
         showFlashMessage("✅ Photo uploaded successfully!");
         fileInput.value = "";
@@ -93,15 +95,17 @@ function handleUpload(event) {
         document.getElementById("photo-tags").value = "";
         document.getElementById("photo-description").value = "";
       } else {
-        showFlashMessage(`❌ Upload failed: ${data.error || "Unknown error"}`, true);
+        showFlashMessage(
+          `❌ Upload failed: ${data.error || "Unknown error"}`,
+          true
+        );
       }
     })
-    .catch(error => {
+    .catch((error) => {
       console.error("Upload Error:", error);
       showFlashMessage("❌ Upload failed: Network error.", true);
     });
-  }
-  
+}
 
 // --- Event Listeners ---
 document.getElementById("login-form").addEventListener("submit", handleLogin);

@@ -17,135 +17,61 @@ body.gallery-page {
 
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* ✅ SMALLER */
-    gap: 0.75rem; /* Smaller gap between photos */
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Balanced column sizing */
+    gap: 1rem;
     padding: 2rem;
     max-width: 1400px;
     margin: 0 auto;
-  }
-  
+}
 
-  .gallery-item {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* Modern Card Style – Clean */
+.gallery-item {
     display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-
-.gallery-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    overflow: hidden;
+    transition: transform 0.2s ease;
 }
 
 .gallery-item:hover {
-    transform: scale(1.03);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+    transform: scale(1.02);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
 
-/* Flip Card Core */
-.flip-card {
+.gallery-item img {
     width: 100%;
-    background: transparent;
-    perspective: 1000px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.flip-card-inner {
-    width: 100%;
-    transition: transform 0.8s ease;
-    transform-style: preserve-3d;
-    position: relative;
-}
-
-.flip-card, .flip-card-inner {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.flip-card-inner.flipped {
-    transform: rotateY(180deg);
-}
-
-.flip-card-front, .flip-card-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.flip-card-front {
-    background: #ffffff;
-}
-
-.flip-card-front img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
     display: block;
-  }  
-
-.flip-btn {
-    position: absolute;
-    bottom: 0.5rem;
-    right: 0.5rem;
-    background: rgba(0, 0, 0, 0.6);
-    color: #ffffff;
-    border: none;
-    border-radius: 50%;
-    padding: 0.6rem;
-    font-size: 1.4rem;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.3s ease;
-    backdrop-filter: blur(2px);
+    object-fit: cover;
+    aspect-ratio: 4 / 3;
 }
 
-.flip-btn:hover {
-    background: rgba(0, 0, 0, 0.8);
-    transform: scale(1.1);
-}
-
-.flip-card-back {
-    position: relative;
-    background: #ffffff;
-    transform: rotateY(180deg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    overflow: hidden;
-}
-
-.blurred-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-position: center;
-    background-size: cover;
-    filter: blur(10px) brightness(0.6);
-    z-index: 1;
-}
-
-.photo-info {
-    position: relative;
-    z-index: 2;
+.gallery-item .caption {
+    padding: 0.75rem;
     text-align: center;
-    color: #ffffff;
+}
+
+.gallery-item .caption h3 {
+    font-size: 1rem;
+    margin: 0.3rem 0;
+    color: #1c1c1e;
+}
+
+.gallery-item .caption p {
+    font-size: 0.875rem;
+    color: #666;
+    margin: 0;
+}
+
+/* Flip Card (Deprecated – keep if you may reuse) */
+.flip-card,
+.flip-card-inner,
+.flip-card-front,
+.flip-card-back,
+.flip-btn,
+.blurred-bg,
+.photo-info {
+    display: none !important;
 }

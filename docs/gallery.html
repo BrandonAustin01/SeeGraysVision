@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gallery • SeeGraysVision</title>
+    <title>Gallery • See Gray's Vision</title>
     <link rel="stylesheet" href="assets/css/normalize.css" />
     <link rel="stylesheet" href="assets/css/style.css" />
   </head>
@@ -14,9 +14,10 @@
         <a href="index.html" class="nav-logo">See Gray's Vision</a>
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
-          <li><a href="gallery.html" class="active">Gallery</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
           <li><a href="about.html">About</a></li>
-          <li><a href="admin.html">Admin</a></li>
+          <li><a href="admin.html">Login</a></li>
+          <button id="theme-toggle" aria-label="Toggle theme">☀️</button>
         </ul>
       </div>
     </nav>
@@ -33,5 +34,32 @@
 
     <!-- Scripts -->
     <script src="assets/js/gallery.js"></script>
+
+    <script>
+      const toggleBtn = document.getElementById("theme-toggle");
+
+      function setTheme(mode) {
+        document.body.classList.toggle("light", mode === "light");
+        localStorage.setItem("theme", mode);
+        toggleBtn.textContent = mode === "light" ? "🌙" : "☀️";
+      }
+
+      // System preference fallback
+      const prefersLight =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: light)").matches;
+      const storedTheme = localStorage.getItem("theme");
+
+      if (storedTheme) {
+        setTheme(storedTheme);
+      } else {
+        setTheme(prefersLight ? "light" : "dark");
+      }
+
+      toggleBtn.addEventListener("click", () => {
+        const isLight = document.body.classList.contains("light");
+        setTheme(isLight ? "dark" : "light");
+      });
+    </script>
   </body>
 </html>

@@ -1,0 +1,116 @@
+/* ====== Base Styles ====== */
+
+:root {
+  --font-body: "Inter", sans-serif;
+  --font-heading: "Space Mono", monospace;
+
+  /* Updated Color Palette */
+  --bg-dark: #1a1a1a;
+  --bg-light: #f9f9fb;
+  --card-bg: #ffffff0d;
+  --accent: #8ed6fb;
+  --highlight: #ffcb6b;
+  --text-light: #e0e0e0;
+  --text-dark: #202124;
+  --border-light: #e5e5e5;
+  --border-dark: #2c2c2c;
+
+  --transition-fast: 0.2s ease;
+  --transition-slow: 0.4s ease;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  transition: background-color var(--transition-slow),
+    color var(--transition-slow);
+}
+body.light {
+  --bg-dark: #f9f9fb;
+  --text-light: #202124;
+  --card-bg: #ffffff;
+  --accent: #0066cc;
+  --highlight: #ffaa33;
+  --border-dark: #d0d0d0;
+
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover {
+  color: var(--highlight);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+input,
+textarea,
+button {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--accent);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Container Helpers */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Utility Classes */
+.hidden {
+  display: none;
+}
+.hidden-soft {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ====== Theme Toggle Button ====== */
+
+#theme-toggle {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--accent);
+  cursor: pointer;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  padding: 0;
+  margin-left: 1rem;
+  line-height: 1;
+}
+
+#theme-toggle:hover {
+  color: var(--highlight);
+  transform: scale(1.15);
+}

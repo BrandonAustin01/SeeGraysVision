@@ -1,0 +1,3 @@
+[build]
+  publish = "docs"        # Serve files from /docs folder
+  functions = "netlify/functions"  # Serverless functions path

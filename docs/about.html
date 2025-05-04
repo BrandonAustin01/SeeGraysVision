@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>About • See Gray's Vision</title>
+    <link rel="stylesheet" href="assets/css/normalize.css" />
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <!-- Leaflet Dark Map -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  </head>
+  <body class="about-page">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="index.html" class="nav-logo">See Gray's Vision</a>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="admin.html">Login</a></li>
+          <button id="theme-toggle" aria-label="Toggle theme">☀️</button>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- About Section -->
+    <section class="about-container">
+      <h1>See Gray's Vision</h1>
+
+      <div class="portrait-box">
+        <img src="assets/img/cj-gray.jpg" alt="CJ Gray portrait" />
+      </div>
+
+      <p class="bio">
+        Welcome to See Gray's Vision — a creative studio led by a passion for
+        capturing authenticity. Specializing in portraits, lifestyle, and
+        editorial storytelling, we bring moments to life through sharp
+        composition and vibrant energy. Based in the heart of Cincinnati, we're
+        here to create visuals that last a lifetime.
+      </p>
+
+      <p><strong>Phone:</strong> 513-693-6152</p>
+      <p>
+        <strong>Email:</strong>
+        <a href="mailto:SeeGraysVision@gmail.com">SeeGraysVision@gmail.com</a>
+      </p>
+      <p>
+        <strong>Location:</strong> 516 Linn Street Suite 415, Cincinnati, OH
+        45203
+      </p>
+
+      <!-- Embedded Google Map -->
+      <iframe
+        class="map-embed"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3091.368609337219!2d-84.52801148475746!3d39.10466077952837!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8841b2d2c7b3bdf1%3A0xfba35f86c3b3269c!2s516%20Linn%20St%20Suite%20415%2C%20Cincinnati%2C%20OH%2045203!5e0!3m2!1sen!2sus!4v1714261826000!5m2!1sen!2sus"
+        allowfullscreen=""
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+      >
+      </iframe>
+    </section>
+
+    <script>
+      const toggleBtn = document.getElementById("theme-toggle");
+
+      function setTheme(mode) {
+        document.body.classList.toggle("light", mode === "light");
+        localStorage.setItem("theme", mode);
+        toggleBtn.textContent = mode === "light" ? "🌙" : "☀️";
+      }
+
+      // System preference fallback
+      const prefersLight =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: light)").matches;
+      const storedTheme = localStorage.getItem("theme");
+
+      if (storedTheme) {
+        setTheme(storedTheme);
+      } else {
+        setTheme(prefersLight ? "light" : "dark");
+      }
+
+      toggleBtn.addEventListener("click", () => {
+        const isLight = document.body.classList.contains("light");
+        setTheme(isLight ? "dark" : "light");
+      });
+    </script>
+  </body>
+</html>

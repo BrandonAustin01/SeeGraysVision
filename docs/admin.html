@@ -3,11 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Admin • SeeGraysVision</title>
+    <title>Admin • See Gray's Vision</title>
     <link rel="stylesheet" href="assets/css/normalize.css" />
     <link rel="stylesheet" href="assets/css/style.css" />
   </head>
   <body>
+    <!-- Navigation -->
     <nav class="navbar">
       <div class="nav-container">
         <a href="index.html" class="nav-logo">See Gray's Vision</a>
@@ -15,12 +16,15 @@
           <li><a href="index.html">Home</a></li>
           <li><a href="gallery.html">Gallery</a></li>
           <li><a href="about.html">About</a></li>
-          <li><a href="admin.html">Admin</a></li>
+          <li><a href="admin.html" class="active">Login</a></li>
+          <button id="theme-toggle" aria-label="Toggle theme">☀️</button>
         </ul>
       </div>
     </nav>
 
+    <!-- Admin Panel -->
     <main class="admin-container">
+      <!-- Login Card -->
       <section class="admin-card" id="login-section">
         <h1>Admin Login</h1>
         <form id="login-form">
@@ -36,6 +40,7 @@
         </form>
       </section>
 
+      <!-- Upload Card -->
       <section class="admin-card" id="upload-section" style="display: none">
         <h1>Upload Photo</h1>
         <form id="upload-form" enctype="multipart/form-data">
@@ -61,6 +66,32 @@
       </section>
     </main>
 
+    <!-- Scripts -->
     <script src="assets/js/admin.js"></script>
+    <script>
+      const toggleBtn = document.getElementById("theme-toggle");
+
+      function setTheme(mode) {
+        document.body.classList.toggle("light", mode === "light");
+        localStorage.setItem("theme", mode);
+        toggleBtn.textContent = mode === "light" ? "🌙" : "☀️";
+      }
+
+      const prefersLight = window.matchMedia?.(
+        "(prefers-color-scheme: light)"
+      ).matches;
+      const savedTheme = localStorage.getItem("theme");
+
+      if (savedTheme) {
+        setTheme(savedTheme);
+      } else {
+        setTheme(prefersLight ? "light" : "dark");
+      }
+
+      toggleBtn.addEventListener("click", () => {
+        const isLight = document.body.classList.contains("light");
+        setTheme(isLight ? "dark" : "light");
+      });
+    </script>
   </body>
 </html>

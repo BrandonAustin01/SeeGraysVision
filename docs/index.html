@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SeeGraysVision</title>
+    <title>See Gray's Vision</title>
     <link rel="stylesheet" href="assets/css/normalize.css" />
     <link rel="stylesheet" href="assets/css/style.css" />
   </head>
@@ -15,21 +15,57 @@
           <li><a href="index.html">Home</a></li>
           <li><a href="gallery.html">Gallery</a></li>
           <li><a href="about.html">About</a></li>
-          <li><a href="admin.html">Admin</a></li>
+          <li><a href="admin.html">Login</a></li>
+          <button id="theme-toggle" aria-label="Toggle theme">☀️</button>
         </ul>
       </div>
     </nav>
 
     <section class="hero">
+      <img src="assets/img/hero.jpg" alt="Hero" class="hero-img" />
       <div class="overlay"></div>
       <div class="hero-content">
-        <h1>SeeGraysVision</h1>
-        <p class="date">26th April, 2025</p>
-        <a href="gallery.html" class="btn">View Gallery</a>
+        <h1>See Gray's Vision</h1>
+        <p class="date" id="current-date"></p>
+        <a href="gallery.html" class="btn hero-btn">View Gallery</a>
       </div>
       <footer class="hero-footer">
-        <p>SeeGraysVision Photography Studio</p>
+        <p>See Gray's Vision</p>
       </footer>
     </section>
+    <script>
+      // Show today’s date in the hero section
+      const dateEl = document.getElementById("current-date");
+      const options = { day: "numeric", month: "long", year: "numeric" };
+      const today = new Date().toLocaleDateString("en-US", options);
+      if (dateEl) dateEl.textContent = today;
+    </script>
+
+    <script>
+      const toggleBtn = document.getElementById("theme-toggle");
+
+      function setTheme(mode) {
+        document.body.classList.toggle("light", mode === "light");
+        localStorage.setItem("theme", mode);
+        toggleBtn.textContent = mode === "light" ? "🌙" : "☀️";
+      }
+
+      // System preference fallback
+      const prefersLight =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: light)").matches;
+      const storedTheme = localStorage.getItem("theme");
+
+      if (storedTheme) {
+        setTheme(storedTheme);
+      } else {
+        setTheme(prefersLight ? "light" : "dark");
+      }
+
+      toggleBtn.addEventListener("click", () => {
+        const isLight = document.body.classList.contains("light");
+        setTheme(isLight ? "dark" : "light");
+      });
+    </script>
   </body>
 </html>

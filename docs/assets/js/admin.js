@@ -7,7 +7,14 @@
 const ADMIN_USERNAME = "CJBanco";
 const ADMIN_PASSWORD = "IAmMusic";
 const UPLOAD_SECRET = "seegraysvision_secret";
-const SERVER_UPLOAD_URL = "http://127.0.0.1:5000/upload";
+
+// Dynamically switch between local and deployed Netlify environments
+const isLocal =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+const SERVER_UPLOAD_URL = isLocal
+  ? "http://127.0.0.1:8888/.netlify/functions/upload"
+  : "/.netlify/functions/upload";
 
 // --- Helper Functions ---
 
@@ -20,12 +27,7 @@ function showFlashMessage(message, isError = false) {
   const flash = document.getElementById("upload-flash");
   flash.textContent = message;
 
-  if (isError) {
-    flash.style.backgroundColor = "#d93025"; // Red for error
-  } else {
-    flash.style.backgroundColor = "#32d74b"; // Green for success
-  }
-
+  flash.style.backgroundColor = isError ? "#d93025" : "#32d74b";
   flash.classList.add("show");
 
   setTimeout(() => {
@@ -62,11 +64,9 @@ function handleUpload(event) {
   event.preventDefault();
 
   const fileInput = document.getElementById("photo");
-  const titleInput = document.getElementById("photo-title").value.trim();
-  const tagsInput = document.getElementById("photo-tags").value.trim();
-  const descriptionInput = document
-    .getElementById("photo-description")
-    .value.trim();
+  const title = document.getElementById("photo-title").value.trim();
+  const tags = document.getElementById("photo-tags").value.trim();
+  const description = document.getElementById("photo-description").value.trim();
 
   if (fileInput.files.length === 0) {
     showFlashMessage("❌ Please select a file to upload.", true);
@@ -75,18 +75,19 @@ function handleUpload(event) {
 
   const formData = new FormData();
   formData.append("photo", fileInput.files[0]);
-  formData.append("title", titleInput);
-  formData.append("tags", tagsInput);
-  formData.append("description", descriptionInput);
+  formData.append("title", title);
+  formData.append("tags", tags);
+  formData.append("description", description);
 
   fetch(SERVER_UPLOAD_URL, {
     method: "POST",
     headers: {
       Authorization: UPLOAD_SECRET,
+      // ⚠️ Do NOT manually set Content-Type when using FormData
     },
     body: formData,
   })
-    .then((response) => response.json())
+    .then((res) => res.json())
     .then((data) => {
       if (data.success) {
         showFlashMessage("✅ Photo uploaded successfully!");

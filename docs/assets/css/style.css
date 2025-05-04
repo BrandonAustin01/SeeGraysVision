@@ -1,7 +1,644 @@
-@import url('reset.css');
-@import url('base.css');
-@import url('navbar.css');
-@import url('hero.css');
-@import url('gallery.css');
-@import url('admin.css');
-@import url('flash.css');
+/* ====== Base Styles ====== */
+
+:root {
+  --font-body: "Inter", sans-serif;
+  --font-heading: "Space Mono", monospace;
+
+  /* Refined Modern Color Palette */
+  --bg-dark: #111111; /* Deep charcoal */
+  --bg-light: #f5f5f4; /* Gentle gray ivory */
+  --card-bg: #1a1a1a; /* Clean dark surface */
+  --accent: #b8b2a2; /* Muted stone beige (natural, elegant) */
+  --highlight: #6c93b5; /* Slate blue (modern, stylish) */
+  --text-light: #eaeaea; /* Light gray */
+  --text-dark: #1c1c1c; /* Rich ink for light backgrounds */
+  --border-light: #dcdcdc; /* Soft light dividers */
+  --border-dark: #2a2a2a; /* Subtle dark mode dividers */
+
+  --transition-fast: 0.2s ease;
+  --transition-slow: 0.4s ease;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  transition: background-color var(--transition-slow),
+    color var(--transition-slow);
+}
+body.light {
+  --bg-dark: #f5f5f4;
+  --text-light: #1c1c1c;
+  --card-bg: #ffffff;
+  --accent: #b8b2a2;
+  --highlight: #6c93b5;
+  --border-dark: #cccccc;
+
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover {
+  color: var(--highlight);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+input,
+textarea,
+button {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--accent);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Container Helpers */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Utility Classes */
+.hidden {
+  display: none;
+}
+.hidden-soft {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ====== Theme Toggle Button ====== */
+
+#theme-toggle {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--accent);
+  cursor: pointer;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  padding: 0;
+  margin-left: 1rem;
+  line-height: 1;
+}
+
+#theme-toggle:hover {
+  color: var(--highlight);
+  transform: scale(1.15);
+}
+/* ====== Navigation Bar ====== */
+
+.navbar {
+  margin: 0;
+  padding: 0.75rem 2rem;
+  position: fixed; /* makes it stick to top */
+  top: 0;
+  width: 100%;
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.nav-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  font-family: var(--font-heading);
+  color: var(--highlight);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-light);
+  transition: color var(--transition-fast);
+}
+
+.nav-links li a:hover {
+  color: var(--accent);
+}
+
+.nav-links li a.active {
+  border-bottom: 2px solid var(--accent);
+}
+
+/* Light Mode Support */
+body.light .navbar {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+}
+
+body.light .nav-links li a {
+  color: var(--text-dark);
+}
+
+body.light .nav-links li a:hover {
+  color: var(--accent);
+}
+
+body.light .nav-logo {
+  color: var(--highlight);
+}
+
+/* Responsive Navbar */
+@media (max-width: 768px) {
+  .nav-links {
+    gap: 1rem;
+  }
+}
+/* ====== Landing Hero Section ====== */
+
+.hero {
+  position: relative;
+  width: 100%;
+  height: calc(100dvh - var(--nav-height, 70px));
+  background: url("../img/hero.jpg") center center / cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 10, 0.6);
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-content p.date,
+.hero-content .btn {
+  z-index: 2;
+  position: relative;
+}
+
+.hero-content h1 {
+  color: var(--accent);
+  font-size: 3.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: 2px;
+  font-family: var(--font-heading);
+}
+
+.hero .date {
+  font-size: 1rem;
+  letter-spacing: 1px;
+  color: var(--text-light);
+  margin-bottom: 2rem;
+}
+
+.hero-footer {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: rgba(244, 244, 244, 0.75);
+  z-index: 2;
+}
+
+/* ====== Hero Button Style ====== */
+
+.hero-btn {
+  background-color: var(--highlight);
+  color: #111;
+  padding: 0.85rem 1.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.hero-btn:hover {
+  background-color: var(--accent);
+  transform: scale(1.05);
+}
+
+/* ====== Fix Hero Stacking ====== */
+
+.hero-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 10, 0.6);
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-btn {
+  background-color: var(--highlight);
+  color: #111;
+  padding: 0.85rem 1.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: background-color var(--transition-fast),
+    transform var(--transition-fast);
+  margin-top: 1.5rem;
+}
+
+.hero-btn:hover {
+  background-color: var(--accent);
+  transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 2.2rem;
+  }
+
+  .hero {
+    background-attachment: scroll;
+  }
+}
+/* ====== Gallery Page ====== */
+
+body.gallery-page {
+  background: var(--bg-dark);
+  color: var(--text-light);
+}
+
+.gallery-header {
+  text-align: center;
+  margin-top: 90px;
+  margin-bottom: 2rem;
+}
+
+.gallery-header h1 {
+  font-size: 2.5rem;
+  letter-spacing: 1px;
+  font-family: var(--font-heading);
+  color: var(--accent);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ====== Modern Card Style ====== */
+
+.gallery-item {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(6px);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.gallery-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  aspect-ratio: 4 / 3;
+}
+
+.gallery-item .caption {
+  padding: 1rem;
+  text-align: center;
+  background-color: transparent;
+}
+
+.gallery-item .caption h3 {
+  font-size: 1rem;
+  margin: 0.25rem 0;
+  color: var(--text-light);
+}
+
+.gallery-item .caption p {
+  font-size: 0.875rem;
+  color: #999;
+  margin: 0;
+}
+
+/* ====== Deprecated/Hidden Styles ====== */
+
+.flip-card,
+.flip-card-inner,
+.flip-card-front,
+.flip-card-back,
+.flip-btn,
+.blurred-bg,
+.photo-info {
+  display: none !important;
+}
+
+/* ====== Admin Page ====== */
+
+.admin-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  font-family: var(--font-body);
+}
+
+.admin-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  padding: 2.25rem;
+  margin: 2rem 0;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 440px;
+  text-align: center;
+  transition: transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.admin-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+}
+
+.admin-card form input[type="text"],
+.admin-card form input[type="password"],
+.admin-card form input[type="file"],
+.admin-card form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+  font-size: 1rem;
+  color: var(--text-light);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.admin-card form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.admin-card form input::placeholder,
+.admin-card form textarea::placeholder {
+  color: #aaa;
+}
+
+.admin-card form button.btn {
+  width: 100%;
+  padding: 0.9rem;
+  background-color: var(--highlight);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.admin-card form button.btn:hover {
+  background-color: var(--accent);
+  transform: scale(1.03);
+}
+
+/* Reset some browser defaults */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Flash Message for Upload Success */
+.flash-message {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #32d74b;
+  padding: 0.75rem 1.5rem;
+  margin-top: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: inline-block;
+  pointer-events: none;
+}
+
+.error-message {
+  margin-top: 1rem;
+  color: #f44336;
+  font-size: 0.95rem;
+}
+
+.flash-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* ====== About Page ====== */
+
+body.about-page {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  font-family: var(--font-body);
+  margin: 0;
+  padding: 0;
+}
+
+.about-container {
+  margin-top: 90px; /* matches navbar height + margin */
+  max-width: 900px;
+  padding: 2.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  line-height: 1.8;
+}
+
+.about-container h1 {
+  font-size: 2.5rem;
+  font-family: var(--font-heading);
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.bio {
+  font-size: 1.05rem;
+  color: var(--text-light);
+  text-align: justify;
+  margin-bottom: 2rem;
+}
+
+.about-container p {
+  margin: 0.75rem 0;
+  font-size: 1rem;
+  color: var(--text-medium);
+}
+
+.about-container a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.map-embed {
+  margin-top: 2rem;
+  width: 100%;
+  height: 360px;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  filter: grayscale(0.2) brightness(0.9) contrast(1.15);
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .about-container {
+    padding: 1.5rem;
+  }
+
+  .about-container h1 {
+    font-size: 2rem;
+  }
+
+  .bio {
+    font-size: 1rem;
+  }
+}
+
+/* ====== About Page Portrait Box ====== */
+
+.portrait-box {
+  max-width: 280px;
+  margin: 0 auto 2rem;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: var(--card-bg);
+  padding: 0.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.portrait-box img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  transition: transform 0.4s ease;
+}
+
+.portrait-box:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+.portrait-box:hover img {
+  transform: scale(1.015);
+}

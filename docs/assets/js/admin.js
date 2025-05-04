@@ -1,32 +1,22 @@
 // ========================
 // SeeGraysVision Admin Panel Script
-// Handles Login + Upload with Flash Feedback
+// Secure Upload Panel Only
 // ========================
 
-// --- Configuration ---
-const ADMIN_USERNAME = "CJBanco";
-const ADMIN_PASSWORD = "IAmMusic";
-const UPLOAD_SECRET = "seegraysvision_secret";
-
-// Dynamically switch between local and deployed Netlify environments
 const isLocal =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1";
+
 const SERVER_UPLOAD_URL = isLocal
   ? "http://127.0.0.1:8888/.netlify/functions/upload"
   : "/.netlify/functions/upload";
 
-// --- Helper Functions ---
-
 /**
  * Displays a temporary flash message after actions.
- * @param {string} message - The text to display
- * @param {boolean} isError - Whether it's an error message
  */
 function showFlashMessage(message, isError = false) {
   const flash = document.getElementById("upload-flash");
   flash.textContent = message;
-
   flash.style.backgroundColor = isError ? "#d93025" : "#32d74b";
   flash.classList.add("show");
 
@@ -37,28 +27,47 @@ function showFlashMessage(message, isError = false) {
 }
 
 /**
- * Handles login form submission.
- * Validates user credentials before showing upload section.
+ * Skips hard login, reveal upload on button press.
+ * Fallbacks to default Netlify secretless panel if username/password are not present.
  */
 function handleLogin(event) {
   event.preventDefault();
 
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
+  const usernameField = document.getElementById("username");
+  const passwordField = document.getElementById("password");
   const loginError = document.getElementById("login-error");
 
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+  // If fields don't exist (minimal panel), skip login check
+  if (!usernameField || !passwordField) {
     document.getElementById("login-section").style.display = "none";
     document.getElementById("upload-section").style.display = "block";
-    loginError.textContent = "";
-  } else {
-    loginError.textContent = "Invalid login. Please try again.";
+    return;
   }
+
+  const username = usernameField.value.trim();
+  const password = passwordField.value.trim();
+
+  fetch("/.netlify/functions/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Unauthorized");
+      return res.json();
+    })
+    .then(() => {
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("upload-section").style.display = "block";
+      loginError.textContent = "";
+    })
+    .catch(() => {
+      loginError.textContent = "Invalid login. Please try again.";
+    });
 }
 
 /**
- * Handles photo upload form submission.
- * Sends image to server with authorization.
+ * Upload handler with secure key passed in form
  */
 function handleUpload(event) {
   event.preventDefault();
@@ -67,6 +76,7 @@ function handleUpload(event) {
   const title = document.getElementById("photo-title").value.trim();
   const tags = document.getElementById("photo-tags").value.trim();
   const description = document.getElementById("photo-description").value.trim();
+  const uploadKey = document.getElementById("upload-key").value.trim();
 
   if (fileInput.files.length === 0) {
     showFlashMessage("❌ Please select a file to upload.", true);
@@ -78,13 +88,10 @@ function handleUpload(event) {
   formData.append("title", title);
   formData.append("tags", tags);
   formData.append("description", description);
+  formData.append("uploadKey", uploadKey);
 
   fetch(SERVER_UPLOAD_URL, {
     method: "POST",
-    headers: {
-      Authorization: UPLOAD_SECRET,
-      // ⚠️ Do NOT manually set Content-Type when using FormData
-    },
     body: formData,
   })
     .then((res) => res.json())
@@ -108,6 +115,5 @@ function handleUpload(event) {
     });
 }
 
-// --- Event Listeners ---
 document.getElementById("login-form").addEventListener("submit", handleLogin);
 document.getElementById("upload-form").addEventListener("submit", handleUpload);

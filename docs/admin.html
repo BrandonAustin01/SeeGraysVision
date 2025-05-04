@@ -16,6 +16,7 @@
           <li><a href="index.html">Home</a></li>
           <li><a href="gallery.html">Gallery</a></li>
           <li><a href="about.html">About</a></li>
+          <li><a href="services.html">Services</a></li>
           <li><a href="admin.html" class="active">Login</a></li>
           <button id="theme-toggle" aria-label="Toggle theme">☀️</button>
         </ul>
@@ -24,23 +25,21 @@
 
     <!-- Admin Panel -->
     <main class="admin-container">
-      <!-- Login Card -->
+      <!-- Login Section -->
       <section class="admin-card" id="login-section">
-        <h1>Admin Login</h1>
+        <h1>Access Panel</h1>
         <form id="login-form">
+          <!-- Future fields: -->
+          <!--
           <input type="text" id="username" placeholder="Username" required />
-          <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            required
-          />
-          <button type="submit" class="btn">Login</button>
+          <input type="password" id="password" placeholder="Password" required />
+          -->
+          <button type="submit" class="btn">Begin Upload</button>
           <p class="error-message" id="login-error"></p>
         </form>
       </section>
 
-      <!-- Upload Card -->
+      <!-- Upload Section -->
       <section class="admin-card" id="upload-section" style="display: none">
         <h1>Upload Photo</h1>
         <form id="upload-form" enctype="multipart/form-data">
@@ -60,6 +59,12 @@
             placeholder="Photo Description (optional)"
           ></textarea>
           <input type="file" id="photo" accept="image/*" required />
+          <input
+            type="password"
+            id="upload-key"
+            placeholder="Upload Key (required)"
+            required
+          />
           <button type="submit" class="btn">Upload Photo</button>
         </form>
         <div id="upload-flash" class="flash-message"></div>

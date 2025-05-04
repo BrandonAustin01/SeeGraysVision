@@ -1,3 +1,8 @@
 [build]
-  publish = "docs"        # Serve files from /docs folder
-  functions = "netlify/functions"  # Serverless functions path
+  publish = "docs"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200

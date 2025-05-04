@@ -1,9 +1,8 @@
-// netlify/functions/upload.js
 const fs = require("fs");
 const path = require("path");
 const Busboy = require("busboy");
 
-const UPLOAD_SECRET = "seegraysvision_secret";
+const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
 const uploadDir = path.join(__dirname, "../../docs/assets/img/uploads");
 const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
 
@@ -18,7 +17,7 @@ exports.handler = async (event) => {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Headers": "Content-Type",
       },
       body: "",
     };
@@ -32,15 +31,6 @@ exports.handler = async (event) => {
     };
   }
 
-  if (event.headers.authorization !== UPLOAD_SECRET) {
-    return {
-      statusCode: 401,
-      headers: { "Access-Control-Allow-Origin": "*" },
-      body: JSON.stringify({ error: "Unauthorized" }),
-    };
-  }
-
-  // Convert the base64 body buffer
   const buffer = Buffer.from(
     event.body,
     event.isBase64Encoded ? "base64" : "utf8"
@@ -61,9 +51,7 @@ exports.handler = async (event) => {
     busboy.on("file", (fieldname, file, originalFilename) => {
       filename = path.basename(originalFilename);
       filePath = path.join(uploadDir, filename);
-
-      const writeStream = fs.createWriteStream(filePath);
-      file.pipe(writeStream);
+      file.pipe(fs.createWriteStream(filePath));
     });
 
     busboy.on("field", (fieldname, value) => {
@@ -71,6 +59,14 @@ exports.handler = async (event) => {
     });
 
     busboy.on("finish", () => {
+      if (fields.uploadKey !== UPLOAD_SECRET) {
+        return resolve({
+          statusCode: 401,
+          headers: { "Access-Control-Allow-Origin": "*" },
+          body: JSON.stringify({ error: "Unauthorized upload key" }),
+        });
+      }
+
       const photoEntry = {
         filename,
         title: fields.title || "",

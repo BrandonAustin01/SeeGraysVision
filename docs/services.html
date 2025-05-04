@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Services • See Gray's Vision</title>
+    <link rel="stylesheet" href="assets/css/normalize.css" />
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body class="about-page">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="index.html" class="nav-logo">See Gray's Vision</a>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="services.html" class="active">Services</a></li>
+          <li><a href="admin.html">Login</a></li>
+          <button id="theme-toggle" aria-label="Toggle theme">☀️</button>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Services Section -->
+    <main class="services-container">
+      <h1>Services</h1>
+
+      <div class="service-grid">
+        <div class="service-card">
+          <div class="icon">📸</div>
+          <h3>Headshots</h3>
+          <p>
+            Crisp, professional portraits — perfect for LinkedIn, casting, or
+            branding.
+          </p>
+        </div>
+        <div class="service-card">
+          <div class="icon">🎬</div>
+          <h3>Promo</h3>
+          <p>
+            Dynamic promotional shots tailored to elevate your personal or
+            business brand.
+          </p>
+        </div>
+        <div class="service-card">
+          <div class="icon">🎓</div>
+          <h3>Senior Photos</h3>
+          <p>
+            Celebrate milestones with timeless senior portraits that feel
+            authentically you.
+          </p>
+        </div>
+        <div class="service-card">
+          <div class="icon">🖼️</div>
+          <h3>Portrait Photography</h3>
+          <p>
+            Artistic portraits captured with emotion, composition, and
+            storytelling in mind.
+          </p>
+        </div>
+        <div class="service-card">
+          <div class="icon">🎉</div>
+          <h3>Event Photography</h3>
+          <p>
+            Professional coverage for your special moments — candid, clear, and
+            memorable.
+          </p>
+        </div>
+      </div>
+
+      <p class="services-note">
+        Need something custom? <a href="about.html">Visit the About page</a> or
+        <a href="mailto:SeeGraysVision@gmail.com">contact me directly</a>.
+      </p>
+    </main>
+
+    <!-- Theme toggle script -->
+    <script>
+      const toggleBtn = document.getElementById("theme-toggle");
+
+      function setTheme(mode) {
+        document.body.classList.toggle("light", mode === "light");
+        localStorage.setItem("theme", mode);
+        toggleBtn.textContent = mode === "light" ? "🌙" : "☀️";
+      }
+
+      const prefersLight =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: light)").matches;
+      const storedTheme = localStorage.getItem("theme");
+
+      if (storedTheme) {
+        setTheme(storedTheme);
+      } else {
+        setTheme(prefersLight ? "light" : "dark");
+      }
+
+      toggleBtn.addEventListener("click", () => {
+        const isLight = document.body.classList.contains("light");
+        setTheme(isLight ? "dark" : "light");
+      });
+    </script>
+  </body>
+</html>

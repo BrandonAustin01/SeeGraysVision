@@ -49,14 +49,25 @@
           <input
             type="text"
             id="photo-title"
-            placeholder="Photo Title"
-            required
+            placeholder="Photo Title (optional)"
           />
-          <input
-            type="text"
-            id="photo-tags"
-            placeholder="Tags (comma-separated)"
-          />
+
+          <fieldset class="tag-group">
+            <legend>Select Tags</legend>
+            <div class="tag-checkbox-group" id="photo-tags">
+              <label
+                ><input type="checkbox" value="Headshots" /> 📸 Headshots</label
+              >
+              <label
+                ><input type="checkbox" value="Scenery" /> 🌄 Scenery</label
+              >
+              <label><input type="checkbox" value="Events" /> 🎉 Events</label>
+              <label
+                ><input type="checkbox" value="Family" /> 👨‍👩‍👧‍👦 Portraits</label
+              >
+            </div>
+          </fieldset>
+
           <textarea
             id="photo-description"
             placeholder="Photo Description (optional)"

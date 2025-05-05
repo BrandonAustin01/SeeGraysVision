@@ -74,7 +74,18 @@ function handleUpload(event) {
 
   const fileInput = document.getElementById("photo");
   const title = document.getElementById("photo-title").value.trim();
-  const tags = document.getElementById("photo-tags").value.trim();
+  const tagCheckboxes = document.querySelectorAll(
+    '#photo-tags input[type="checkbox"]'
+  );
+  const selectedTags = Array.from(tagCheckboxes)
+    .filter((cb) => cb.checked)
+    .map((cb) => cb.value);
+
+  if (selectedTags.length === 0) {
+    showFlashMessage("❌ Please select at least one tag.", true);
+    return;
+  }
+  const tags = selectedTags.join(", ");
   const description = document.getElementById("photo-description").value.trim();
   const uploadKey = document.getElementById("upload-key").value.trim();
 

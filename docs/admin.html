@@ -16,10 +16,13 @@
           <li><a href="index.html">Home</a></li>
           <li><a href="gallery.html">Gallery</a></li>
           <li><a href="about.html">About</a></li>
-          <li><a href="services.html" class="active">Services</a></li>
+          <li><a href="services.html">Services</a></li>
           <li><a href="admin.html">Login</a></li>
           <button id="theme-toggle" aria-label="Toggle theme">☀️</button>
         </ul>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+          ☰
+        </button>
       </div>
     </nav>
 
@@ -96,6 +99,24 @@
       toggleBtn.addEventListener("click", () => {
         const isLight = document.body.classList.contains("light");
         setTheme(isLight ? "dark" : "light");
+      });
+    </script>
+    <script>
+      const navToggle = document.getElementById("nav-toggle");
+      const navLinks = document.querySelector(".nav-links");
+
+      navToggle.addEventListener("click", () => {
+        navLinks.classList.toggle("show");
+        document.body.classList.toggle("nav-open");
+      });
+    </script>
+    <script>
+      // Highlight active nav link based on current URL
+      const currentPath = window.location.pathname.split("/").pop();
+      document.querySelectorAll(".nav-links a").forEach((link) => {
+        if (link.getAttribute("href") === currentPath) {
+          link.classList.add("active");
+        }
       });
     </script>
   </body>

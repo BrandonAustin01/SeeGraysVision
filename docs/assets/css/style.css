@@ -778,3 +778,82 @@ body.light .services-container {
   background-color: #ffffff;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
+
+/* Mobile Nav Toggle */
+.nav-toggle {
+  display: none;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .nav-toggle {
+    display: block;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    flex-direction: column;
+    background-color: var(--bg-dark);
+    padding: 1rem 2rem;
+    display: none;
+  }
+
+  .nav-links.show {
+    display: flex;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-content h1,
+  .gallery-header h1,
+  .about-container h1,
+  .services-container h1 {
+    font-size: 1.75rem;
+  }
+
+  .bio,
+  .about-container p,
+  .services-note,
+  .service-card p {
+    font-size: 0.95rem;
+  }
+
+  .admin-card {
+    padding: 1.25rem;
+  }
+
+  .gallery-grid,
+  .service-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+}
+
+button,
+input,
+textarea {
+  min-height: 44px; /* recommended mobile tap target */
+}
+
+@media (max-width: 600px) {
+  .map-embed {
+    height: 240px;
+  }
+}
+
+.nav-links {
+  z-index: 99;
+  right: 0;
+  transition: all 0.3s ease-in-out;
+}
+
+body.nav-open {
+  overflow: hidden;
+}

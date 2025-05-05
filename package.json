@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "busboy": "^0.3.1",
+    "cloudinary": "^2.6.0",
     "multiparty": "^4.2.3"
   }
 }

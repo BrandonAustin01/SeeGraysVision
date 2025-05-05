@@ -1,13 +1,20 @@
-const fs = require("fs");
-const path = require("path");
+const cloudinary = require("cloudinary").v2;
 const Busboy = require("busboy");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+
+// Set Cloudinary config from environment
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
-const uploadDir = path.join(__dirname, "../../docs/assets/img/uploads");
 const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
 
-// Ensure directories and metadata file exist
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+// Ensure metadata file exists
 if (!fs.existsSync(metadataPath)) fs.writeFileSync(metadataPath, "[]", "utf8");
 
 exports.handler = async (event) => {
@@ -45,20 +52,24 @@ exports.handler = async (event) => {
     });
 
     let fields = {};
-    let filename = null;
-    let filePath = null;
+    let tempFilePath = null;
+    let uploadStream = null;
 
-    busboy.on("file", (fieldname, file, originalFilename) => {
-      filename = path.basename(originalFilename);
-      filePath = path.join(uploadDir, filename);
-      file.pipe(fs.createWriteStream(filePath));
+    busboy.on("file", (fieldname, file, filename) => {
+      const tmpdir = os.tmpdir();
+      tempFilePath = path.join(tmpdir, filename);
+
+      const writeStream = fs.createWriteStream(tempFilePath);
+      file.pipe(writeStream);
+
+      file.on("end", () => writeStream.end());
     });
 
     busboy.on("field", (fieldname, value) => {
       fields[fieldname] = value;
     });
 
-    busboy.on("finish", () => {
+    busboy.on("finish", async () => {
       if (fields.uploadKey !== UPLOAD_SECRET) {
         return resolve({
           statusCode: 401,
@@ -67,22 +78,37 @@ exports.handler = async (event) => {
         });
       }
 
-      const photoEntry = {
-        filename,
-        title: fields.title || "",
-        tags: fields.tags || "",
-        description: fields.description || "",
-      };
+      try {
+        const result = await cloudinary.uploader.upload(tempFilePath, {
+          folder: "seegraysvision_uploads",
+        });
 
-      const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
-      metadata.push(photoEntry);
-      fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
+        const photoEntry = {
+          public_id: result.public_id,
+          url: result.secure_url,
+          title: fields.title || "",
+          tags: fields.tags || "",
+          description: fields.description || "",
+          uploaded_at: new Date().toISOString(),
+        };
 
-      resolve({
-        statusCode: 200,
-        headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({ success: true, filename }),
-      });
+        const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
+        metadata.push(photoEntry);
+        fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
+
+        resolve({
+          statusCode: 200,
+          headers: { "Access-Control-Allow-Origin": "*" },
+          body: JSON.stringify({ success: true, photo: photoEntry }),
+        });
+      } catch (err) {
+        console.error("Cloudinary upload failed:", err);
+        resolve({
+          statusCode: 500,
+          headers: { "Access-Control-Allow-Origin": "*" },
+          body: JSON.stringify({ error: "Upload failed" }),
+        });
+      }
     });
 
     busboy.end(buffer);

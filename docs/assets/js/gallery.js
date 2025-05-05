@@ -4,17 +4,16 @@ document.addEventListener("DOMContentLoaded", function () {
   fetch("data/photos.json")
     .then((response) => response.json())
     .then((photos) => {
-      photos.forEach((photo) => {
+      // Optional: newest first
+      photos.reverse().forEach((photo) => {
         const item = document.createElement("div");
         item.className = "gallery-item clean";
 
         item.innerHTML = `
           <div class="img-wrapper">
-            <img src="assets/img/uploads/${photo.filename}" alt="${
-          photo.title
-        }">
-            <a href="assets/img/uploads/${
-              photo.filename
+            <img src="${photo.url}" alt="${photo.title || "Photo"}">
+            <a href="${
+              photo.url
             }" class="download-icon" download title="Download Photo">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                    xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
@@ -34,5 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch((error) => {
       console.error("Error loading gallery:", error);
+      galleryGrid.innerHTML =
+        "<p style='text-align:center;'>⚠️ Failed to load gallery.</p>";
     });
 });

@@ -84,7 +84,7 @@ function handleUpload(event) {
   }
 
   const formData = new FormData();
-  formData.append("photo", fileInput.files[0]);
+  formData.append("file", fileInput.files[0]); // ✅ match Cloudinary backend
   formData.append("title", title);
   formData.append("tags", tags);
   formData.append("description", description);
@@ -98,10 +98,7 @@ function handleUpload(event) {
     .then((data) => {
       if (data.success) {
         showFlashMessage("✅ Photo uploaded successfully!");
-        fileInput.value = "";
-        document.getElementById("photo-title").value = "";
-        document.getElementById("photo-tags").value = "";
-        document.getElementById("photo-description").value = "";
+        document.getElementById("upload-form").reset(); // ✅ cleaner reset
       } else {
         showFlashMessage(
           `❌ Upload failed: ${data.error || "Unknown error"}`,

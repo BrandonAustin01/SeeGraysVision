@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tagCards = document.querySelectorAll(".tag-card");
   const clearBtn = document.getElementById("clear-filter");
 
+  // Determine environment (local vs Netlify)
   const isLocal =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1";
@@ -13,22 +14,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let allPhotos = [];
 
-  // Render filtered photos or empty message
+  // Render photos with optional filtering
   function renderPhotos(filterTag = null) {
-    galleryGrid.innerHTML = ""; // Clear current gallery view
+    galleryGrid.innerHTML = ""; // Clear existing
 
     const photosToShow = filterTag
-      ? allPhotos.filter(
-          (photo) =>
-            photo.tags &&
-            photo.tags
-              .toString()
-              .toLowerCase()
-              .includes(filterTag.toLowerCase())
-        )
+      ? allPhotos.filter((photo) => {
+          if (!photo.tags) return false;
+          const tagsArray = Array.isArray(photo.tags)
+            ? photo.tags
+            : photo.tags.split(",").map((t) => t.trim());
+          return tagsArray.some(
+            (tag) => tag.toLowerCase() === filterTag.toLowerCase()
+          );
+        })
       : [];
 
-    // Show placeholder if nothing is selected
+    // Empty state
     if (!filterTag || photosToShow.length === 0) {
       galleryGrid.innerHTML = `
         <p style="text-align:center; color: var(--text-muted);">
@@ -38,10 +40,14 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Show photos matching selected tag
+    // Populate gallery
     photosToShow.reverse().forEach((photo) => {
       const item = document.createElement("div");
       item.className = "gallery-item clean";
+
+      const tagsDisplay = Array.isArray(photo.tags)
+        ? photo.tags.join(", ")
+        : photo.tags;
 
       item.innerHTML = `
         <div class="img-wrapper">
@@ -58,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
         <div class="caption">
           ${photo.title ? `<h3>${photo.title}</h3>` : ""}
-          <p>${photo.tags ? photo.tags.join(", ") : ""}</p>
+          <p>${tagsDisplay}</p>
         </div>
       `;
 
@@ -66,12 +72,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Fetch photo metadata
+  // Fetch photos from API
   fetch(GALLERY_URL)
     .then((response) => response.json())
     .then((photos) => {
       allPhotos = photos;
 
+      // Initial placeholder
       galleryGrid.innerHTML = `
         <p style="text-align:center; color: var(--text-muted);">
           📂 Select a category above to view matching photos.
@@ -87,11 +94,10 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
     });
 
-  // Tag click filter
+  // Tag filter
   tagCards.forEach((card) => {
     card.addEventListener("click", () => {
       const selectedTag = card.dataset.tag;
-
       tagCards.forEach((c) => c.classList.remove("active"));
       card.classList.add("active");
       clearBtn.classList.remove("active");

@@ -20,13 +20,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const photosToShow = normalizedTag
       ? allPhotos.filter((photo) => {
-          if (!photo.tags) return false;
-
-          const tagsArray = Array.isArray(photo.tags)
-            ? photo.tags
-            : photo.tags.split(",").map((t) => t.trim());
-
-          return tagsArray.some((tag) => tag.toLowerCase() === normalizedTag);
+          if (!Array.isArray(photo.tags)) return false;
+          return photo.tags.some((tag) => tag.toLowerCase() === normalizedTag);
         })
       : [];
 
@@ -46,9 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const item = document.createElement("div");
       item.className = "gallery-item clean";
 
-      const tagsDisplay = Array.isArray(photo.tags)
-        ? photo.tags.join(", ")
-        : photo.tags;
+      const tagsDisplay = photo.tags.join(", ");
 
       item.innerHTML = `
         <div class="img-wrapper">
@@ -76,9 +69,9 @@ document.addEventListener("DOMContentLoaded", function () {
   fetch(GALLERY_URL)
     .then((response) => response.json())
     .then((photos) => {
-      allPhotos = photos;
+      allPhotos = Array.isArray(photos) ? photos : [];
 
-      console.log("📦 All Photos Loaded:", photos);
+      console.log("📦 All Photos Loaded:", allPhotos);
 
       galleryGrid.innerHTML = `
         <p style="text-align:center; color: var(--text-muted);">

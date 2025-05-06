@@ -1,3 +1,5 @@
+// netlify/functions/gallery.js
+
 const cloudinary = require("cloudinary").v2;
 const Busboy = require("busboy");
 const fs = require("fs");
@@ -12,15 +14,9 @@ cloudinary.config({
 });
 
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
-const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
-
-// Ensure metadata file exists
-if (!fs.existsSync(metadataPath)) {
-  fs.writeFileSync(metadataPath, "[]", "utf8");
-}
 
 exports.handler = async (event) => {
-  // Handle CORS preflight
+  // ✅ Handle CORS preflight
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
@@ -33,29 +29,43 @@ exports.handler = async (event) => {
     };
   }
 
-  // ✅ Handle GET for gallery display
+  // ✅ Handle GET: fetch live gallery from Cloudinary
   if (event.httpMethod === "GET") {
     try {
-      const metadata = fs.existsSync(metadataPath)
-        ? JSON.parse(fs.readFileSync(metadataPath, "utf8"))
-        : [];
+      const results = await cloudinary.search
+        .expression("folder:seegraysvision_uploads")
+        .sort_by("created_at", "desc")
+        .max_results(100)
+        .execute();
+
+      const photos = results.resources.map((res) => ({
+        public_id: res.public_id,
+        url: res.secure_url,
+        title: res.context?.custom?.title || "",
+        description: res.context?.custom?.description || "",
+        tags: res.tags || [],
+        uploaded_at: res.created_at,
+      }));
 
       return {
         statusCode: 200,
         headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify(metadata),
+        body: JSON.stringify(photos),
       };
     } catch (err) {
-      console.error("Gallery read error:", err);
+      console.error("Cloudinary fetch error:", err);
       return {
         statusCode: 500,
         headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({ error: "Failed to read gallery metadata" }),
+        body: JSON.stringify({
+          errorType: "CloudinaryError",
+          errorMessage: err.message,
+        }),
       };
     }
   }
 
-  // ✅ Handle POST for upload
+  // ✅ Reject unsupported methods
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
@@ -67,6 +77,7 @@ exports.handler = async (event) => {
     };
   }
 
+  // ✅ Handle POST: file upload
   const buffer = Buffer.from(
     event.body,
     event.isBase64Encoded ? "base64" : "utf8"
@@ -107,24 +118,23 @@ exports.handler = async (event) => {
       try {
         const result = await cloudinary.uploader.upload(tempFilePath, {
           folder: "seegraysvision_uploads",
+          tags: fields.tags ? fields.tags.split(",").map((t) => t.trim()) : [],
+          context: {
+            custom: {
+              title: fields.title || "",
+              description: fields.description || "",
+            },
+          },
         });
-
-        const tagsArray = fields.tags
-          ? fields.tags.split(",").map((t) => t.trim())
-          : [];
 
         const photoEntry = {
           public_id: result.public_id,
           url: result.secure_url,
           title: fields.title || "",
-          tags: tagsArray,
+          tags: fields.tags ? fields.tags.split(",").map((t) => t.trim()) : [],
           description: fields.description || "",
-          uploaded_at: new Date().toISOString(),
+          uploaded_at: result.created_at,
         };
-
-        const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
-        metadata.push(photoEntry);
-        fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
 
         resolve({
           statusCode: 200,

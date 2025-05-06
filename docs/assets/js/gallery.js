@@ -13,7 +13,10 @@ document.addEventListener("DOMContentLoaded", function () {
       ? allPhotos.filter(
           (photo) =>
             photo.tags &&
-            photo.tags.toLowerCase().includes(filterTag.toLowerCase())
+            photo.tags
+              .toString()
+              .toLowerCase()
+              .includes(filterTag.toLowerCase())
         )
       : [];
 
@@ -46,8 +49,8 @@ document.addEventListener("DOMContentLoaded", function () {
           </a>
         </div>
         <div class="caption">
-        ${photo.title ? `<h3>${photo.title}</h3>` : ""}
-          <p>${photo.tags ? photo.tags : ""}</p>
+          ${photo.title ? `<h3>${photo.title}</h3>` : ""}
+          <p>${photo.tags ? photo.tags.join(", ") : ""}</p>
         </div>
       `;
 
@@ -55,13 +58,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Fetch photo metadata from photos.json
-  fetch("data/photos.json")
+  // ✅ Fetch live photo metadata from Netlify function (Cloudinary API)
+  fetch("/.netlify/functions/gallery")
     .then((response) => response.json())
     .then((photos) => {
       allPhotos = photos;
 
-      // Show initial instruction
       galleryGrid.innerHTML = `
         <p style="text-align:center; color: var(--text-muted);">
           📂 Select a category above to view matching photos.
@@ -96,17 +98,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Handle Clear Filter button
   clearBtn.addEventListener("click", () => {
-    // Deactivate all tags
     tagCards.forEach((c) => c.classList.remove("active"));
 
-    // Show empty state again
     galleryGrid.innerHTML = `
       <p style="text-align:center; color: var(--text-muted);">
         📂 Select a category above to view matching photos.
       </p>
     `;
 
-    // Highlight "Clear Filter" as active
     clearBtn.classList.add("active");
   });
 });

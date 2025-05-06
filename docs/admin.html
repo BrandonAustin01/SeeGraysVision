@@ -32,11 +32,9 @@
       <section class="admin-card" id="login-section">
         <h1>Access Panel</h1>
         <form id="login-form">
-          <!-- Future fields: -->
-          <!--
-          <input type="text" id="username" placeholder="Username" required />
-          <input type="password" id="password" placeholder="Password" required />
-          -->
+          <!-- Future login fields -->
+          <!-- <input type="text" id="username" placeholder="Username" required /> -->
+          <!-- <input type="password" id="password" placeholder="Password" required /> -->
           <button type="submit" class="btn">Begin Upload</button>
           <p class="error-message" id="login-error"></p>
         </form>
@@ -72,16 +70,48 @@
             id="photo-description"
             placeholder="Photo Description (optional)"
           ></textarea>
-          <input type="file" id="photo" accept="image/*" required />
+
+          <input
+            type="file"
+            id="photo"
+            name="photo"
+            accept="image/*"
+            required
+          />
+          <div id="preview-container" class="preview-box hidden">
+            <p>🖼️ Preview:</p>
+            <img id="photo-preview" src="" alt="Preview" />
+          </div>
+
           <input
             type="password"
             id="upload-key"
             placeholder="Upload Key (required)"
             required
           />
+
           <button type="submit" class="btn">Upload Photo</button>
         </form>
         <div id="upload-flash" class="flash-message"></div>
+      </section>
+
+      <!-- Delete Section -->
+      <section class="admin-card" id="delete-section" style="display: none">
+        <h1>Delete Uploaded Photos</h1>
+        <input
+          type="password"
+          id="delete-key"
+          placeholder="Enter Upload Key to Load Images"
+          required
+        />
+        <button id="load-images-btn" class="btn">🔓 Load Images</button>
+
+        <div id="delete-gallery" class="gallery-grid small-grid"></div>
+
+        <button id="delete-selected-btn" class="btn danger-btn" disabled>
+          🗑️ Delete Selected
+        </button>
+        <div id="delete-flash" class="flash-message"></div>
       </section>
     </main>
 
@@ -89,45 +119,124 @@
     <script src="assets/js/admin.js"></script>
     <script>
       const toggleBtn = document.getElementById("theme-toggle");
-
       function setTheme(mode) {
         document.body.classList.toggle("light", mode === "light");
         localStorage.setItem("theme", mode);
         toggleBtn.textContent = mode === "light" ? "🌙" : "☀️";
       }
-
       const prefersLight = window.matchMedia?.(
         "(prefers-color-scheme: light)"
       ).matches;
       const savedTheme = localStorage.getItem("theme");
-
       if (savedTheme) {
         setTheme(savedTheme);
       } else {
         setTheme(prefersLight ? "light" : "dark");
       }
-
       toggleBtn.addEventListener("click", () => {
         const isLight = document.body.classList.contains("light");
         setTheme(isLight ? "dark" : "light");
       });
     </script>
+
     <script>
       const navToggle = document.getElementById("nav-toggle");
       const navLinks = document.querySelector(".nav-links");
-
       navToggle.addEventListener("click", () => {
         navLinks.classList.toggle("show");
         document.body.classList.toggle("nav-open");
       });
     </script>
+
     <script>
-      // Highlight active nav link based on current URL
       const currentPath = window.location.pathname.split("/").pop();
       document.querySelectorAll(".nav-links a").forEach((link) => {
         if (link.getAttribute("href") === currentPath) {
           link.classList.add("active");
         }
+      });
+    </script>
+
+    <script>
+      const fileInput = document.getElementById("photo");
+      const previewContainer = document.getElementById("preview-container");
+      const previewImage = document.getElementById("photo-preview");
+
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+        if (file && file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            previewImage.src = e.target.result;
+            previewContainer.classList.remove("hidden");
+          };
+          reader.readAsDataURL(file);
+        } else {
+          previewContainer.classList.add("hidden");
+          previewImage.src = "";
+        }
+      });
+    </script>
+
+    <script>
+      const loadBtn = document.getElementById("load-images-btn");
+      const deleteKeyInput = document.getElementById("delete-key");
+      const deleteGallery = document.getElementById("delete-gallery");
+      const deleteFlash = document.getElementById("delete-flash");
+      const deleteBtn = document.getElementById("delete-selected-btn");
+
+      let loadedPhotos = [];
+
+      loadBtn.addEventListener("click", async () => {
+        const key = deleteKeyInput.value.trim();
+        if (!key) return;
+
+        const res = await fetch("/.netlify/functions/gallery");
+        const photos = await res.json();
+        loadedPhotos = photos;
+
+        deleteGallery.innerHTML = "";
+        photos.forEach((photo) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "gallery-item small";
+
+          wrapper.innerHTML = `
+        <label>
+          <input type="checkbox" class="delete-checkbox" data-id="${
+            photo.public_id
+          }" />
+          <img src="${photo.url}" alt="${photo.title || "Image"}" />
+        </label>
+      `;
+          deleteGallery.appendChild(wrapper);
+        });
+
+        deleteBtn.disabled = false;
+      });
+
+      deleteBtn.addEventListener("click", async () => {
+        const key = deleteKeyInput.value.trim();
+        const selected = document.querySelectorAll(".delete-checkbox:checked");
+
+        if (!selected.length) {
+          deleteFlash.textContent = "⚠️ No images selected.";
+          return;
+        }
+
+        deleteBtn.disabled = true;
+        deleteFlash.textContent = "Deleting selected images...";
+
+        for (const checkbox of selected) {
+          const public_id = checkbox.dataset.id;
+
+          await fetch("/.netlify/functions/delete", {
+            method: "POST",
+            body: JSON.stringify({ public_id, uploadKey: key }),
+          });
+        }
+
+        deleteFlash.textContent = "✅ Images deleted.";
+        setTimeout(() => location.reload(), 1000);
       });
     </script>
   </body>

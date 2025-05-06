@@ -17,10 +17,6 @@ console.log("api_key:", process.env.CLOUDINARY_API_KEY);
 console.log("api_secret set:", !!process.env.CLOUDINARY_API_SECRET);
 
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
-const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
-
-// Ensure metadata file exists
-if (!fs.existsSync(metadataPath)) fs.writeFileSync(metadataPath, "[]", "utf8");
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
@@ -58,7 +54,6 @@ exports.handler = async (event) => {
 
     let fields = {};
     let tempFilePath = null;
-    let uploadStream = null;
 
     busboy.on("file", (fieldname, file, filename) => {
       const tmpdir = os.tmpdir();
@@ -66,7 +61,6 @@ exports.handler = async (event) => {
 
       const writeStream = fs.createWriteStream(tempFilePath);
       file.pipe(writeStream);
-
       file.on("end", () => writeStream.end());
     });
 
@@ -86,25 +80,32 @@ exports.handler = async (event) => {
       try {
         const result = await cloudinary.uploader.upload(tempFilePath, {
           folder: "seegraysvision_uploads",
+          tags: fields.tags ? fields.tags.split(",").map((t) => t.trim()) : [],
+          context: {
+            alt: fields.title || "",
+            caption: fields.description || "",
+            custom: {
+              title: fields.title || "",
+              description: fields.description || "",
+            },
+          },
         });
 
-        const photoEntry = {
-          public_id: result.public_id,
-          url: result.secure_url,
-          title: fields.title || "",
-          tags: fields.tags || "",
-          description: fields.description || "",
-          uploaded_at: new Date().toISOString(),
-        };
-
-        const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
-        metadata.push(photoEntry);
-        fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
-
+        // Return clean response to frontend
         resolve({
           statusCode: 200,
           headers: { "Access-Control-Allow-Origin": "*" },
-          body: JSON.stringify({ success: true, photo: photoEntry }),
+          body: JSON.stringify({
+            success: true,
+            photo: {
+              public_id: result.public_id,
+              url: result.secure_url,
+              title: fields.title || "",
+              tags: fields.tags || "",
+              description: fields.description || "",
+              uploaded_at: result.created_at,
+            },
+          }),
         });
       } catch (err) {
         console.error("Cloudinary upload failed:", err);

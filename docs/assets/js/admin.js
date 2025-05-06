@@ -1,6 +1,6 @@
 // ========================
 // SeeGraysVision Admin Panel Script
-// Secure Upload Panel Only
+// Secure Upload + Deletion Panel
 // ========================
 
 const isLocal =
@@ -11,8 +11,12 @@ const SERVER_UPLOAD_URL = isLocal
   ? "http://127.0.0.1:8888/.netlify/functions/upload"
   : "/.netlify/functions/upload";
 
+const SERVER_DELETE_URL = isLocal
+  ? "http://127.0.0.1:8888/.netlify/functions/delete"
+  : "/.netlify/functions/delete";
+
 /**
- * Displays a temporary flash message after actions.
+ * Upload flash message
  */
 function showFlashMessage(message, isError = false) {
   const flash = document.getElementById("upload-flash");
@@ -27,8 +31,22 @@ function showFlashMessage(message, isError = false) {
 }
 
 /**
- * Skips hard login, reveal upload on button press.
- * Fallbacks to default Netlify secretless panel if username/password are not present.
+ * Deletion toast
+ */
+function showDeleteToast(message, isError = false) {
+  const toast = document.getElementById("delete-flash");
+  toast.textContent = message;
+  toast.style.backgroundColor = isError ? "#d93025" : "#32d74b";
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+    toast.textContent = "";
+  }, 3000);
+}
+
+/**
+ * Skip hard login, reveal both upload and delete sections
  */
 function handleLogin(event) {
   event.preventDefault();
@@ -37,10 +55,10 @@ function handleLogin(event) {
   const passwordField = document.getElementById("password");
   const loginError = document.getElementById("login-error");
 
-  // If fields don't exist (minimal panel), skip login check
   if (!usernameField || !passwordField) {
     document.getElementById("login-section").style.display = "none";
     document.getElementById("upload-section").style.display = "block";
+    document.getElementById("delete-section").style.display = "block";
     return;
   }
 
@@ -59,6 +77,7 @@ function handleLogin(event) {
     .then(() => {
       document.getElementById("login-section").style.display = "none";
       document.getElementById("upload-section").style.display = "block";
+      document.getElementById("delete-section").style.display = "block";
       loginError.textContent = "";
     })
     .catch(() => {
@@ -67,7 +86,7 @@ function handleLogin(event) {
 }
 
 /**
- * Upload handler with secure key passed in form
+ * Upload handler
  */
 function handleUpload(event) {
   event.preventDefault();
@@ -85,6 +104,7 @@ function handleUpload(event) {
     showFlashMessage("❌ Please select at least one tag.", true);
     return;
   }
+
   const tags = selectedTags.join(", ");
   const description = document.getElementById("photo-description").value.trim();
   const uploadKey = document.getElementById("upload-key").value.trim();
@@ -95,7 +115,7 @@ function handleUpload(event) {
   }
 
   const formData = new FormData();
-  formData.append("file", fileInput.files[0]); // ✅ match Cloudinary backend
+  formData.append("file", fileInput.files[0]);
   formData.append("title", title);
   formData.append("tags", tags);
   formData.append("description", description);
@@ -109,7 +129,7 @@ function handleUpload(event) {
     .then((data) => {
       if (data.success) {
         showFlashMessage("✅ Photo uploaded successfully!");
-        document.getElementById("upload-form").reset(); // ✅ cleaner reset
+        document.getElementById("upload-form").reset();
       } else {
         showFlashMessage(
           `❌ Upload failed: ${data.error || "Unknown error"}`,
@@ -123,5 +143,60 @@ function handleUpload(event) {
     });
 }
 
+/**
+ * Delete handler
+ */
+function handleDelete(event) {
+  event.preventDefault();
+
+  const deleteKeyInput = document.getElementById("delete-key");
+  const deleteBtn = document.getElementById("delete-btn");
+  const loadBtn = document.getElementById("load-btn");
+
+  const key = deleteKeyInput.value.trim();
+  const selected = document.querySelectorAll(".delete-checkbox:checked");
+
+  if (!selected.length) {
+    showDeleteToast("⚠️ No images selected.", true);
+    return;
+  }
+
+  const confirmDelete = confirm(
+    `Are you sure you want to delete ${selected.length} photo(s)?`
+  );
+  if (!confirmDelete) return;
+
+  deleteBtn.disabled = true;
+  showDeleteToast("⏳ Deleting selected images...");
+
+  const failed = [];
+
+  const deleteTasks = Array.from(selected).map(async (checkbox) => {
+    const public_id = checkbox.dataset.id;
+    try {
+      const res = await fetch(SERVER_DELETE_URL, {
+        method: "POST",
+        body: JSON.stringify({ public_id, uploadKey: key }),
+      });
+      const result = await res.json();
+      if (!result.success) failed.push(public_id);
+    } catch {
+      failed.push(public_id);
+    }
+  });
+
+  Promise.all(deleteTasks).then(() => {
+    deleteBtn.disabled = false;
+    if (failed.length === 0) {
+      showDeleteToast("✅ Images deleted.");
+    } else {
+      showDeleteToast(`⚠️ Some deletions failed. (${failed.length})`, true);
+    }
+    loadBtn.click(); // 🔄 refresh list
+  });
+}
+
+// Wire it up
 document.getElementById("login-form").addEventListener("submit", handleLogin);
 document.getElementById("upload-form").addEventListener("submit", handleUpload);
+document.getElementById("delete-btn").addEventListener("click", handleDelete);

@@ -11,6 +11,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+console.log("🌩️ Cloudinary Config Debug:");
+console.log("cloud_name:", process.env.CLOUDINARY_CLOUD_NAME);
+console.log("api_key:", process.env.CLOUDINARY_API_KEY);
+console.log("api_secret set:", !!process.env.CLOUDINARY_API_SECRET);
+
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
 const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
 

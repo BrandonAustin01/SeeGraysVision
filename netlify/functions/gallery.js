@@ -1,42 +1,49 @@
-const cloudinary = require("cloudinary").v2;
+// netlify/functions/gallery.js
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const fs = require("fs");
+const path = require("path");
 
-exports.handler = async () => {
+exports.handler = async function () {
+  const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
+
   try {
-    const result = await cloudinary.search
-      .expression("folder:seegraysvision_uploads")
-      .sort_by("uploaded_at", "desc")
-      .max_results(100)
-      .execute();
+    const rawData = fs.readFileSync(metadataPath, "utf-8");
+    const parsed = JSON.parse(rawData);
 
-    // Map Cloudinary result to your frontend format
-    const photos = result.resources.map((res) => ({
-      public_id: res.public_id,
-      url: res.secure_url,
-      title: res.context?.custom?.title || "", // optional
-      tags: res.tags || [],
-      description: res.context?.custom?.description || "",
-      uploaded_at: res.created_at,
+    // Normalize: ensure array of valid photo entries
+    const photos = Array.isArray(parsed)
+      ? parsed.filter((photo) => photo.url)
+      : Object.values(parsed).filter((photo) => photo.url);
+
+    // Patch format: always return uniform structure
+    const cleanPhotos = photos.map((photo) => ({
+      public_id: photo.public_id || "",
+      url: photo.url,
+      title: photo.title || "",
+      tags: Array.isArray(photo.tags)
+        ? photo.tags
+        : typeof photo.tags === "string"
+        ? photo.tags.split(",").map((t) => t.trim())
+        : [],
+      description: photo.description || "",
+      uploaded_at: photo.uploaded_at || null,
     }));
 
     return {
       statusCode: 200,
       headers: {
-        "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
       },
-      body: JSON.stringify(photos),
+      body: JSON.stringify(cleanPhotos),
     };
   } catch (err) {
-    console.error("Gallery fetch error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to load gallery." }),
+      body: JSON.stringify({
+        error: "Failed to load gallery metadata.",
+        detail: err.message,
+      }),
     };
   }
 };

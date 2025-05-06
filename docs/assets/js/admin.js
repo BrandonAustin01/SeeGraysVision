@@ -8,12 +8,12 @@ const isLocal =
   window.location.hostname === "127.0.0.1";
 
 const SERVER_UPLOAD_URL = isLocal
-  ? "http://127.0.0.1:8888/.netlify/functions/upload"
-  : "/.netlify/functions/upload";
+  ? "http://localhost:8888/.netlify/functions/upload"
+  : "/api/upload"; // ✅ uses Netlify redirect
 
 const SERVER_DELETE_URL = isLocal
-  ? "http://127.0.0.1:8888/.netlify/functions/delete"
-  : "/.netlify/functions/delete";
+  ? "http://localhost:8888/.netlify/functions/delete"
+  : "/api/delete"; // ✅ uses Netlify redirect
 
 /**
  * Upload flash message

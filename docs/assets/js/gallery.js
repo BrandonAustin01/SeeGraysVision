@@ -3,6 +3,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const tagCards = document.querySelectorAll(".tag-card");
   const clearBtn = document.getElementById("clear-filter");
 
+  const isLocal =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+
+  const GALLERY_URL = isLocal
+    ? "http://localhost:8888/.netlify/functions/gallery"
+    : "/api/gallery";
+
   let allPhotos = [];
 
   // Render filtered photos or empty message
@@ -58,8 +66,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // ✅ Fetch live photo metadata from Netlify function (Cloudinary API)
-  fetch("/.netlify/functions/gallery")
+  // Fetch photo metadata
+  fetch(GALLERY_URL)
     .then((response) => response.json())
     .then((photos) => {
       allPhotos = photos;
@@ -79,24 +87,20 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
     });
 
-  // When tag button is clicked
+  // Tag click filter
   tagCards.forEach((card) => {
     card.addEventListener("click", () => {
       const selectedTag = card.dataset.tag;
 
-      // Mark this tag active, others inactive
       tagCards.forEach((c) => c.classList.remove("active"));
       card.classList.add("active");
-
-      // Remove "Clear Filter" highlight
       clearBtn.classList.remove("active");
 
-      // Render gallery for selected tag
       renderPhotos(selectedTag);
     });
   });
 
-  // Handle Clear Filter button
+  // Clear filter
   clearBtn.addEventListener("click", () => {
     tagCards.forEach((c) => c.classList.remove("active"));
 

@@ -18,6 +18,9 @@ console.log("api_secret set:", !!process.env.CLOUDINARY_API_SECRET);
 
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
 
+// Path to save metadata for local testing
+const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
+
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -91,21 +94,36 @@ exports.handler = async (event) => {
           },
         });
 
-        // Return clean response to frontend
+        const photoEntry = {
+          public_id: result.public_id,
+          url: result.secure_url,
+          title: fields.title || "",
+          tags: fields.tags ? fields.tags.split(",").map((t) => t.trim()) : [],
+          description: fields.description || "",
+          uploaded_at: result.created_at,
+        };
+
+        // Save metadata locally — for dev mode
+        try {
+          if (!fs.existsSync(metadataPath)) {
+            fs.writeFileSync(metadataPath, "[]", "utf8");
+          }
+
+          const current = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
+          current.push(photoEntry);
+          fs.writeFileSync(metadataPath, JSON.stringify(current, null, 2));
+          console.log("📝 Photo metadata saved to local photos.json");
+        } catch (metaErr) {
+          console.warn(
+            "⚠️ Failed to update local photos.json:",
+            metaErr.message
+          );
+        }
+
         resolve({
           statusCode: 200,
           headers: { "Access-Control-Allow-Origin": "*" },
-          body: JSON.stringify({
-            success: true,
-            photo: {
-              public_id: result.public_id,
-              url: result.secure_url,
-              title: fields.title || "",
-              tags: fields.tags || "",
-              description: fields.description || "",
-              uploaded_at: result.created_at,
-            },
-          }),
+          body: JSON.stringify({ success: true, photo: photoEntry }),
         });
       } catch (err) {
         console.error("Cloudinary upload failed:", err);

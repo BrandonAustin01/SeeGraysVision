@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const tagCards = document.querySelectorAll(".tag-card");
   const clearBtn = document.getElementById("clear-filter");
 
-  // Determine environment (local vs Netlify)
   const isLocal =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1";
@@ -14,24 +13,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let allPhotos = [];
 
-  // Render photos with optional filtering
   function renderPhotos(filterTag = null) {
-    galleryGrid.innerHTML = ""; // Clear existing
+    galleryGrid.innerHTML = "";
 
-    const photosToShow = filterTag
+    const normalizedTag = filterTag ? filterTag.toLowerCase() : null;
+
+    const photosToShow = normalizedTag
       ? allPhotos.filter((photo) => {
           if (!photo.tags) return false;
+
           const tagsArray = Array.isArray(photo.tags)
             ? photo.tags
             : photo.tags.split(",").map((t) => t.trim());
-          return tagsArray.some(
-            (tag) => tag.toLowerCase() === filterTag.toLowerCase()
-          );
+
+          return tagsArray.some((tag) => tag.toLowerCase() === normalizedTag);
         })
       : [];
 
-    // Empty state
-    if (!filterTag || photosToShow.length === 0) {
+    console.log("🔍 Selected Tag:", normalizedTag);
+    console.log("🖼️ Matching Photos:", photosToShow);
+
+    if (!normalizedTag || photosToShow.length === 0) {
       galleryGrid.innerHTML = `
         <p style="text-align:center; color: var(--text-muted);">
           📂 Select a category above to view matching photos.
@@ -40,7 +42,6 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Populate gallery
     photosToShow.reverse().forEach((photo) => {
       const item = document.createElement("div");
       item.className = "gallery-item clean";
@@ -72,13 +73,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Fetch photos from API
   fetch(GALLERY_URL)
     .then((response) => response.json())
     .then((photos) => {
       allPhotos = photos;
 
-      // Initial placeholder
+      console.log("📦 All Photos Loaded:", photos);
+
       galleryGrid.innerHTML = `
         <p style="text-align:center; color: var(--text-muted);">
           📂 Select a category above to view matching photos.
@@ -86,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
     })
     .catch((error) => {
-      console.error("Error loading gallery:", error);
+      console.error("❌ Failed to load gallery:", error);
       galleryGrid.innerHTML = `
         <p style="text-align:center; color: red;">
           ⚠️ Failed to load gallery.
@@ -94,7 +95,6 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
     });
 
-  // Tag filter
   tagCards.forEach((card) => {
     card.addEventListener("click", () => {
       const selectedTag = card.dataset.tag;
@@ -106,7 +106,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Clear filter
   clearBtn.addEventListener("click", () => {
     tagCards.forEach((c) => c.classList.remove("active"));
 

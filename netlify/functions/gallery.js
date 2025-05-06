@@ -20,22 +20,49 @@ if (!fs.existsSync(metadataPath)) {
 }
 
 exports.handler = async (event) => {
+  // Handle CORS preflight
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
       },
       body: "",
     };
   }
 
+  // ✅ Handle GET for gallery display
+  if (event.httpMethod === "GET") {
+    try {
+      const metadata = fs.existsSync(metadataPath)
+        ? JSON.parse(fs.readFileSync(metadataPath, "utf8"))
+        : [];
+
+      return {
+        statusCode: 200,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify(metadata),
+      };
+    } catch (err) {
+      console.error("Gallery read error:", err);
+      return {
+        statusCode: 500,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ error: "Failed to read gallery metadata" }),
+      };
+    }
+  }
+
+  // ✅ Handle POST for upload
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
-      headers: { Allow: "POST, OPTIONS" },
+      headers: {
+        Allow: "GET, POST, OPTIONS",
+        "Access-Control-Allow-Origin": "*",
+      },
       body: "Method Not Allowed",
     };
   }
@@ -45,7 +72,7 @@ exports.handler = async (event) => {
     event.isBase64Encoded ? "base64" : "utf8"
   );
 
-  return await new Promise((resolve, reject) => {
+  return await new Promise((resolve) => {
     const busboy = new Busboy({
       headers: {
         "content-type":

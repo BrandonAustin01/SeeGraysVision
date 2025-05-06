@@ -416,30 +416,6 @@ body.gallery-page {
   margin: 0;
 }
 
-.gallery-grid.small-grid {
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-}
-
-.gallery-item.small {
-  border: 1px solid var(--border-dark);
-  border-radius: 8px;
-  padding: 0.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  text-align: center;
-}
-
-.gallery-item.small img {
-  max-width: 100%;
-  border-radius: 6px;
-  margin-top: 0.5rem;
-}
-
-.danger-btn {
-  background: #c0392b;
-  color: white;
-  margin-top: 1rem;
-}
-
 .tag-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -1036,4 +1012,117 @@ textarea {
 
 body.nav-open {
   overflow: hidden;
+}
+
+/* === Admin Delete Section Enhancements === */
+
+#delete-section {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+#delete-key {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-dark);
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.03);
+  color: var(--text-light);
+}
+
+#load-images-btn,
+#delete-selected-btn {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.gallery-grid.small-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.gallery-item.small {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 0.5rem;
+  text-align: center;
+  border: 1px solid var(--border-dark);
+  transition: transform 0.2s ease;
+}
+
+.gallery-item.small:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.gallery-item.small input[type="checkbox"] {
+  margin-bottom: 0.5rem;
+}
+
+.gallery-item.small img {
+  width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+#delete-flash {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+  color: #fff;
+  background-color: var(--accent);
+  display: none;
+}
+
+#delete-flash.show {
+  display: block;
+}
+
+.danger-btn {
+  background-color: #d93025 !important;
+  color: white !important;
+}
+
+/* === Fix: Themed Button Styling for Admin Panel === */
+
+button.btn {
+  display: inline-block;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  background-color: var(--highlight);
+  color: #111;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+button.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+body.light button.btn {
+  background-color: #1c1c1e;
+  color: #fff;
+}
+
+button.danger-btn {
+  background-color: #d93025;
+  color: #fff;
+}
+
+button.danger-btn:hover {
+  background-color: #c62828;
 }

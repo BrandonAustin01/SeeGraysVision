@@ -131,41 +131,39 @@ function handleUpload(event) {
   })
     .then(async (res) => {
       const contentType = res.headers.get("content-type") || "";
-      let data;
+      let raw = "";
+      let data = {};
 
       try {
-        data = contentType.includes("application/json")
+        raw = contentType.includes("application/json")
           ? await res.json()
-          : { error: await res.text() };
+          : await res.text();
+
+        if (typeof raw === "string" && raw.trim().startsWith("{")) {
+          data = JSON.parse(raw);
+        } else {
+          data = raw;
+        }
       } catch (e) {
-        console.error("❌ Failed to parse response:", e);
+        console.error("❌ Could not parse server response:", e);
         return showFlashMessage("❌ Upload failed: Bad server response.", true);
       }
 
-      if (!res.ok) {
-        console.warn("⚠️ Upload failed with status:", res.status);
-        console.warn("📨 Response:", data);
+      if (!res.ok || !data.success) {
+        console.warn("⚠️ Upload failed:", data);
         showFlashMessage(
-          `❌ Upload failed (${res.status}): ${data.error || "Unknown error"}`,
+          `❌ Upload failed: ${data.error || "Unknown error"}`,
           true
         );
         return;
       }
 
-      if (data.success) {
-        showFlashMessage("✅ Photo uploaded successfully!");
-        document.getElementById("upload-form").reset();
-      } else {
-        console.warn("❗ Upload API returned failure:", data);
-        showFlashMessage(
-          `❌ Upload failed: ${data.error || "Unknown error"}`,
-          true
-        );
-      }
+      showFlashMessage("✅ Photo uploaded successfully!");
+      document.getElementById("upload-form").reset();
     })
     .catch((error) => {
-      console.error("🔥 Network or JS error during upload:", error);
-      showFlashMessage("❌ Upload failed: Network or JS error.", true);
+      console.error("🔥 Upload error:", error);
+      showFlashMessage("❌ Upload failed: Network error.", true);
     });
 }
 
@@ -202,6 +200,7 @@ function handleDelete(event) {
     try {
       const res = await fetch(SERVER_DELETE_URL, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ public_id, uploadKey: key }),
       });
       const result = await res.json();

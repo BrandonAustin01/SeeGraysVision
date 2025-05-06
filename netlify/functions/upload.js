@@ -16,6 +16,7 @@ const isDev = process.env.CONTEXT === "dev"; // Netlify dev flag
 const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
 
 exports.handler = async (event) => {
+  // Handle preflight
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
@@ -28,11 +29,12 @@ exports.handler = async (event) => {
     };
   }
 
+  // Reject other methods
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
-      headers: { Allow: "POST, OPTIONS" },
-      body: "Method Not Allowed",
+      headers: { Allow: "POST, OPTIONS", "Access-Control-Allow-Origin": "*" },
+      body: { error: "Method Not Allowed" },
     };
   }
 
@@ -66,10 +68,11 @@ exports.handler = async (event) => {
 
     busboy.on("finish", async () => {
       if (fields.uploadKey !== UPLOAD_SECRET) {
+        console.warn("🛑 Unauthorized upload attempt.");
         return resolve({
           statusCode: 401,
           headers: { "Access-Control-Allow-Origin": "*" },
-          body: JSON.stringify({ error: "Unauthorized upload key" }),
+          body: { error: "Unauthorized upload key" },
         });
       }
 
@@ -96,36 +99,31 @@ exports.handler = async (event) => {
           uploaded_at: result.created_at,
         };
 
-        // Only save metadata in local dev
         if (isDev) {
           try {
             if (!fs.existsSync(metadataPath)) {
               fs.writeFileSync(metadataPath, "[]", "utf8");
             }
-
             const current = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
             current.push(photoEntry);
             fs.writeFileSync(metadataPath, JSON.stringify(current, null, 2));
-            console.log("📝 Saved metadata locally.");
+            console.log("📝 Metadata saved locally.");
           } catch (metaErr) {
-            console.warn(
-              "⚠️ Could not write local photos.json:",
-              metaErr.message
-            );
+            console.warn("⚠️ Failed to update photos.json:", metaErr.message);
           }
         }
 
         resolve({
           statusCode: 200,
           headers: { "Access-Control-Allow-Origin": "*" },
-          body: JSON.stringify({ success: true, photo: photoEntry }),
+          body: { success: true, photo: photoEntry },
         });
       } catch (err) {
         console.error("❌ Cloudinary upload failed:", err);
         resolve({
           statusCode: 500,
           headers: { "Access-Control-Allow-Origin": "*" },
-          body: JSON.stringify({ error: "Upload failed" }),
+          body: { error: "Upload to Cloudinary failed." },
         });
       }
     });

@@ -9,11 +9,11 @@ const isLocal =
 
 const SERVER_UPLOAD_URL = isLocal
   ? "http://localhost:8888/.netlify/functions/upload"
-  : "/api/upload"; // ✅ uses Netlify redirect
+  : "/api/upload";
 
 const SERVER_DELETE_URL = isLocal
   ? "http://localhost:8888/.netlify/functions/delete"
-  : "/api/delete"; // ✅ uses Netlify redirect
+  : "/api/delete";
 
 /**
  * Upload flash message
@@ -46,7 +46,7 @@ function showDeleteToast(message, isError = false) {
 }
 
 /**
- * Skip hard login, reveal both upload and delete sections
+ * Login handler
  */
 function handleLogin(event) {
   event.preventDefault();
@@ -222,7 +222,7 @@ function handleDelete(event) {
   });
 }
 
-// Wire it up
+// Wire it up safely (guards avoid DOM errors)
 const loginForm = document.getElementById("login-form");
 if (loginForm) loginForm.addEventListener("submit", handleLogin);
 

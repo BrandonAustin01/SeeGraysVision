@@ -4,21 +4,15 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-// Set Cloudinary config from environment
+// Cloudinary config from env
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-console.log("🌩️ Cloudinary Config Debug:");
-console.log("cloud_name:", process.env.CLOUDINARY_CLOUD_NAME);
-console.log("api_key:", process.env.CLOUDINARY_API_KEY);
-console.log("api_secret set:", !!process.env.CLOUDINARY_API_SECRET);
-
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
-
-// Path to save metadata for local testing
+const isDev = process.env.CONTEXT === "dev"; // Netlify dev flag
 const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
 
 exports.handler = async (event) => {
@@ -47,7 +41,7 @@ exports.handler = async (event) => {
     event.isBase64Encoded ? "base64" : "utf8"
   );
 
-  return await new Promise((resolve, reject) => {
+  return await new Promise((resolve) => {
     const busboy = new Busboy({
       headers: {
         "content-type":
@@ -61,7 +55,6 @@ exports.handler = async (event) => {
     busboy.on("file", (fieldname, file, filename) => {
       const tmpdir = os.tmpdir();
       tempFilePath = path.join(tmpdir, filename);
-
       const writeStream = fs.createWriteStream(tempFilePath);
       file.pipe(writeStream);
       file.on("end", () => writeStream.end());
@@ -103,21 +96,23 @@ exports.handler = async (event) => {
           uploaded_at: result.created_at,
         };
 
-        // Save metadata locally — for dev mode
-        try {
-          if (!fs.existsSync(metadataPath)) {
-            fs.writeFileSync(metadataPath, "[]", "utf8");
-          }
+        // Only save metadata in local dev
+        if (isDev) {
+          try {
+            if (!fs.existsSync(metadataPath)) {
+              fs.writeFileSync(metadataPath, "[]", "utf8");
+            }
 
-          const current = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
-          current.push(photoEntry);
-          fs.writeFileSync(metadataPath, JSON.stringify(current, null, 2));
-          console.log("📝 Photo metadata saved to local photos.json");
-        } catch (metaErr) {
-          console.warn(
-            "⚠️ Failed to update local photos.json:",
-            metaErr.message
-          );
+            const current = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
+            current.push(photoEntry);
+            fs.writeFileSync(metadataPath, JSON.stringify(current, null, 2));
+            console.log("📝 Saved metadata locally.");
+          } catch (metaErr) {
+            console.warn(
+              "⚠️ Could not write local photos.json:",
+              metaErr.message
+            );
+          }
         }
 
         resolve({
@@ -126,7 +121,7 @@ exports.handler = async (event) => {
           body: JSON.stringify({ success: true, photo: photoEntry }),
         });
       } catch (err) {
-        console.error("Cloudinary upload failed:", err);
+        console.error("❌ Cloudinary upload failed:", err);
         resolve({
           statusCode: 500,
           headers: { "Access-Control-Allow-Origin": "*" },

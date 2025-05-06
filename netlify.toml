@@ -6,3 +6,6 @@
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+
+[functions]
+  node_bundler = "esbuild"  # Required for multipart support with Busboy

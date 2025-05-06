@@ -1,3 +1,5 @@
+// upload.js
+
 const cloudinary = require("cloudinary").v2;
 const Busboy = require("busboy");
 const fs = require("fs");
@@ -12,7 +14,7 @@ cloudinary.config({
 });
 
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
-const isDev = process.env.CONTEXT === "dev"; // Netlify dev flag
+const isDev = process.env.CONTEXT === "dev";
 const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
 
 exports.handler = async (event) => {
@@ -29,12 +31,11 @@ exports.handler = async (event) => {
     };
   }
 
-  // Reject other methods
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
       headers: { Allow: "POST, OPTIONS", "Access-Control-Allow-Origin": "*" },
-      body: { error: "Method Not Allowed" },
+      body: JSON.stringify({ error: "Method Not Allowed" }),
     };
   }
 
@@ -72,7 +73,7 @@ exports.handler = async (event) => {
         return resolve({
           statusCode: 401,
           headers: { "Access-Control-Allow-Origin": "*" },
-          body: { error: "Unauthorized upload key" },
+          body: JSON.stringify({ error: "Unauthorized upload key" }),
         });
       }
 
@@ -116,14 +117,14 @@ exports.handler = async (event) => {
         resolve({
           statusCode: 200,
           headers: { "Access-Control-Allow-Origin": "*" },
-          body: { success: true, photo: photoEntry },
+          body: JSON.stringify({ success: true, photo: photoEntry }),
         });
       } catch (err) {
         console.error("❌ Cloudinary upload failed:", err);
         resolve({
           statusCode: 500,
           headers: { "Access-Control-Allow-Origin": "*" },
-          body: { error: "Upload to Cloudinary failed." },
+          body: JSON.stringify({ error: "Upload to Cloudinary failed." }),
         });
       }
     });

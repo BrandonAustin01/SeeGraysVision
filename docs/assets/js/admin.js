@@ -121,16 +121,42 @@ function handleUpload(event) {
   formData.append("description", description);
   formData.append("uploadKey", uploadKey);
 
+  console.log("📤 Uploading to:", SERVER_UPLOAD_URL);
+  console.log("📦 Payload tags:", tags);
+  console.log("🔑 Upload Key present:", !!uploadKey);
+
   fetch(SERVER_UPLOAD_URL, {
     method: "POST",
     body: formData,
   })
-    .then((res) => res.json())
-    .then((data) => {
+    .then(async (res) => {
+      const contentType = res.headers.get("content-type") || "";
+      let data;
+
+      try {
+        data = contentType.includes("application/json")
+          ? await res.json()
+          : { error: await res.text() };
+      } catch (e) {
+        console.error("❌ Failed to parse response:", e);
+        return showFlashMessage("❌ Upload failed: Bad server response.", true);
+      }
+
+      if (!res.ok) {
+        console.warn("⚠️ Upload failed with status:", res.status);
+        console.warn("📨 Response:", data);
+        showFlashMessage(
+          `❌ Upload failed (${res.status}): ${data.error || "Unknown error"}`,
+          true
+        );
+        return;
+      }
+
       if (data.success) {
         showFlashMessage("✅ Photo uploaded successfully!");
         document.getElementById("upload-form").reset();
       } else {
+        console.warn("❗ Upload API returned failure:", data);
         showFlashMessage(
           `❌ Upload failed: ${data.error || "Unknown error"}`,
           true
@@ -138,8 +164,8 @@ function handleUpload(event) {
       }
     })
     .catch((error) => {
-      console.error("Upload Error:", error);
-      showFlashMessage("❌ Upload failed: Network error.", true);
+      console.error("🔥 Network or JS error during upload:", error);
+      showFlashMessage("❌ Upload failed: Network or JS error.", true);
     });
 }
 
@@ -197,6 +223,11 @@ function handleDelete(event) {
 }
 
 // Wire it up
-document.getElementById("login-form").addEventListener("submit", handleLogin);
-document.getElementById("upload-form").addEventListener("submit", handleUpload);
-document.getElementById("delete-btn").addEventListener("click", handleDelete);
+const loginForm = document.getElementById("login-form");
+if (loginForm) loginForm.addEventListener("submit", handleLogin);
+
+const uploadForm = document.getElementById("upload-form");
+if (uploadForm) uploadForm.addEventListener("submit", handleUpload);
+
+const deleteBtn = document.getElementById("delete-btn");
+if (deleteBtn) deleteBtn.addEventListener("click", handleDelete);

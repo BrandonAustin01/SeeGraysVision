@@ -1,0 +1,6 @@
+# Route /api/* to corresponding Netlify function
+/api/*  /.netlify/functions/:splat  200
+
+# Optional: Ensure clean URLs (no .html)
+# Uncomment if you want www.example.com/about instead of about.html
+# /*    /index.html   200

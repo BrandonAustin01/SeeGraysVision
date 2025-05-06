@@ -229,5 +229,5 @@ if (loginForm) loginForm.addEventListener("submit", handleLogin);
 const uploadForm = document.getElementById("upload-form");
 if (uploadForm) uploadForm.addEventListener("submit", handleUpload);
 
-const deleteBtn = document.getElementById("delete-btn");
-if (deleteBtn) deleteBtn.addEventListener("click", handleDelete);
+const deleteBtnRef = document.getElementById("delete-btn");
+if (deleteBtnRef) deleteBtnRef.addEventListener("click", handleDelete);

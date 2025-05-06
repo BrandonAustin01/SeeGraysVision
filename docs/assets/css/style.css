@@ -505,6 +505,59 @@ body.gallery-page {
   display: none !important;
 }
 
+/* Clear Filter Button */
+#clear-filter {
+  all: unset;
+  display: block;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-dark);
+  border-radius: 16px;
+  padding: 1.25rem;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: var(--text-light);
+  cursor: pointer;
+  width: 100%; /* match tag-card width */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#clear-filter:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+#clear-filter.active {
+  background-color: var(--highlight);
+  color: #111;
+}
+
+/* Smooth fade-in animation for photo cards */
+.gallery-item {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .tag-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    padding: 1rem;
+  }
+
+  #clear-filter {
+    font-size: 1rem;
+    padding: 1rem;
+  }
+}
+
 /* ====== Admin Page ====== */
 
 .admin-container {

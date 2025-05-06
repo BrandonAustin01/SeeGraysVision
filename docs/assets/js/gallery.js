@@ -1,19 +1,33 @@
 document.addEventListener("DOMContentLoaded", function () {
   const galleryGrid = document.querySelector(".gallery-grid");
   const tagCards = document.querySelectorAll(".tag-card");
+  const clearBtn = document.getElementById("clear-filter");
 
   let allPhotos = [];
 
-  // Function to render photos based on selected tag
+  // Render filtered photos or empty message
   function renderPhotos(filterTag = null) {
-    galleryGrid.innerHTML = ""; // Clear current gallery
+    galleryGrid.innerHTML = ""; // Clear current gallery view
 
     const photosToShow = filterTag
       ? allPhotos.filter(
-          (photo) => photo.tags && photo.tags.includes(filterTag)
+          (photo) =>
+            photo.tags &&
+            photo.tags.toLowerCase().includes(filterTag.toLowerCase())
         )
-      : allPhotos;
+      : [];
 
+    // Show placeholder if nothing is selected
+    if (!filterTag || photosToShow.length === 0) {
+      galleryGrid.innerHTML = `
+        <p style="text-align:center; color: var(--text-muted);">
+          📂 Select a category above to view matching photos.
+        </p>
+      `;
+      return;
+    }
+
+    // Show photos matching selected tag
     photosToShow.reverse().forEach((photo) => {
       const item = document.createElement("div");
       item.className = "gallery-item clean";
@@ -32,8 +46,8 @@ document.addEventListener("DOMContentLoaded", function () {
           </a>
         </div>
         <div class="caption">
-          <h3>${photo.title || "Untitled"}</h3>
-          <p>${photo.tags ? photo.tags.join(", ") : ""}</p>
+        ${photo.title ? `<h3>${photo.title}</h3>` : ""}
+          <p>${photo.tags ? photo.tags : ""}</p>
         </div>
       `;
 
@@ -41,28 +55,58 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Fetch and store all photos
+  // Fetch photo metadata from photos.json
   fetch("data/photos.json")
     .then((response) => response.json())
     .then((photos) => {
       allPhotos = photos;
-      renderPhotos(); // Initial render with all photos
+
+      // Show initial instruction
+      galleryGrid.innerHTML = `
+        <p style="text-align:center; color: var(--text-muted);">
+          📂 Select a category above to view matching photos.
+        </p>
+      `;
     })
     .catch((error) => {
       console.error("Error loading gallery:", error);
-      galleryGrid.innerHTML =
-        "<p style='text-align:center;'>⚠️ Failed to load gallery.</p>";
+      galleryGrid.innerHTML = `
+        <p style="text-align:center; color: red;">
+          ⚠️ Failed to load gallery.
+        </p>
+      `;
     });
 
-  // Handle tag card clicks
+  // When tag button is clicked
   tagCards.forEach((card) => {
     card.addEventListener("click", () => {
       const selectedTag = card.dataset.tag;
 
+      // Mark this tag active, others inactive
       tagCards.forEach((c) => c.classList.remove("active"));
       card.classList.add("active");
 
+      // Remove "Clear Filter" highlight
+      clearBtn.classList.remove("active");
+
+      // Render gallery for selected tag
       renderPhotos(selectedTag);
     });
+  });
+
+  // Handle Clear Filter button
+  clearBtn.addEventListener("click", () => {
+    // Deactivate all tags
+    tagCards.forEach((c) => c.classList.remove("active"));
+
+    // Show empty state again
+    galleryGrid.innerHTML = `
+      <p style="text-align:center; color: var(--text-muted);">
+        📂 Select a category above to view matching photos.
+      </p>
+    `;
+
+    // Highlight "Clear Filter" as active
+    clearBtn.classList.add("active");
   });
 });

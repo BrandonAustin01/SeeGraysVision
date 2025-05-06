@@ -31,58 +31,55 @@
       <h1>Gallery</h1>
     </header>
 
-    <!-- Gallery Grid -->
-    <main class="gallery-grid">
-      <!-- Dynamic photo cards will be injected here by gallery.js -->
-    </main>
-
+    <!-- Tag Filters (now moved up here) -->
     <section class="tag-grid">
       <div class="tag-card" data-tag="Headshots">📸 Headshots</div>
       <div class="tag-card" data-tag="Scenery">🌄 Scenery</div>
       <div class="tag-card" data-tag="Events">🎉 Events</div>
       <div class="tag-card" data-tag="Family">👨‍👩‍👧‍👦 Portraits</div>
+      <button id="clear-filter" class="clear-filter">✖️ Clear Filter</button>
     </section>
+
+    <!-- Gallery Grid (photos go here) -->
+    <main class="gallery-grid">
+      <!-- Dynamic photo cards will be injected here by gallery.js -->
+    </main>
 
     <!-- Scripts -->
     <script src="assets/js/gallery.js"></script>
 
     <script>
       const toggleBtn = document.getElementById("theme-toggle");
-
       function setTheme(mode) {
         document.body.classList.toggle("light", mode === "light");
         localStorage.setItem("theme", mode);
         toggleBtn.textContent = mode === "light" ? "🌙" : "☀️";
       }
-
-      // System preference fallback
       const prefersLight =
         window.matchMedia &&
         window.matchMedia("(prefers-color-scheme: light)").matches;
       const storedTheme = localStorage.getItem("theme");
-
       if (storedTheme) {
         setTheme(storedTheme);
       } else {
         setTheme(prefersLight ? "light" : "dark");
       }
-
       toggleBtn.addEventListener("click", () => {
         const isLight = document.body.classList.contains("light");
         setTheme(isLight ? "dark" : "light");
       });
     </script>
+
     <script>
       const navToggle = document.getElementById("nav-toggle");
       const navLinks = document.querySelector(".nav-links");
-
       navToggle.addEventListener("click", () => {
         navLinks.classList.toggle("show");
         document.body.classList.toggle("nav-open");
       });
     </script>
+
     <script>
-      // Highlight active nav link based on current URL
       const currentPath = window.location.pathname.split("/").pop();
       document.querySelectorAll(".nav-links a").forEach((link) => {
         if (link.getAttribute("href") === currentPath) {

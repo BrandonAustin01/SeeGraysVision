@@ -1,5 +1,3 @@
-// netlify/functions/gallery.js
-
 const cloudinary = require("cloudinary").v2;
 const Busboy = require("busboy");
 const fs = require("fs");
@@ -14,8 +12,6 @@ cloudinary.config({
 });
 
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
-
-// ✅ Allowed tags — lowercase only for matching
 const ALLOWED_TAGS = ["headshots", "scenery", "events", "portraits"];
 
 exports.handler = async (event) => {
@@ -106,6 +102,8 @@ exports.handler = async (event) => {
     });
 
     busboy.on("finish", async () => {
+      console.log("📥 Received fields:", fields);
+
       if (fields.uploadKey !== UPLOAD_SECRET) {
         return resolve({
           statusCode: 401,
@@ -115,7 +113,6 @@ exports.handler = async (event) => {
       }
 
       try {
-        // ✅ Normalize and validate tags
         let tagsArray = fields.tags
           ? fields.tags
               .split(",")
@@ -124,6 +121,7 @@ exports.handler = async (event) => {
           : [];
 
         if (tagsArray.length === 0) {
+          console.warn("⚠️ No valid tags received or tags missing.");
           return resolve({
             statusCode: 400,
             headers: { "Access-Control-Allow-Origin": "*" },
@@ -134,6 +132,8 @@ exports.handler = async (event) => {
           });
         }
 
+        console.log("🏷️ Normalized tags for upload:", tagsArray);
+
         const result = await cloudinary.uploader.upload(tempFilePath, {
           folder: "seegraysvision_uploads",
           tags: tagsArray,
@@ -143,6 +143,11 @@ exports.handler = async (event) => {
               description: fields.description || "",
             },
           },
+        });
+
+        console.log("✅ Cloudinary upload result:", {
+          public_id: result.public_id,
+          tags: result.tags,
         });
 
         const reloaded = await cloudinary.api.resource(result.public_id, {
@@ -166,7 +171,7 @@ exports.handler = async (event) => {
           body: JSON.stringify({ success: true, photo: photoEntry }),
         });
       } catch (err) {
-        console.error("Cloudinary upload failed:", err);
+        console.error("❌ Cloudinary upload failed:", err);
         resolve({
           statusCode: 500,
           headers: { "Access-Control-Allow-Origin": "*" },

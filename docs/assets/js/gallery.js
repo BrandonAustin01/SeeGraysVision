@@ -20,12 +20,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const photosToShow = normalizedTag
       ? allPhotos.filter((photo) => {
-          if (!Array.isArray(photo.tags)) return false;
+          const tagList = Array.isArray(photo.tags)
+            ? photo.tags
+            : typeof photo.tags === "string"
+            ? photo.tags.split(",").map((t) => t.trim().toLowerCase())
+            : [];
 
-          return photo.tags.some((tag) => {
-            if (typeof tag !== "string") return false;
-            return tag.toLowerCase() === normalizedTag;
-          });
+          return tagList.includes(normalizedTag);
         })
       : [];
 
@@ -46,7 +47,9 @@ document.addEventListener("DOMContentLoaded", function () {
       item.className = "gallery-item clean";
 
       const tagsDisplay = Array.isArray(photo.tags)
-        ? photo.tags.join(", ")
+        ? photo.tags
+            .map((t) => t.charAt(0).toUpperCase() + t.slice(1))
+            .join(", ")
         : "";
 
       item.innerHTML = `
@@ -78,6 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
       allPhotos = Array.isArray(photos) ? photos : [];
 
       console.log("📦 All Photos Loaded:", allPhotos);
+      console.table(allPhotos.map((p) => ({ title: p.title, tags: p.tags })));
 
       galleryGrid.innerHTML = `
         <p style="text-align:center; color: var(--text-muted);">

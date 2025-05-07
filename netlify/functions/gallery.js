@@ -15,8 +15,10 @@ cloudinary.config({
 
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
 
+// ✅ Allowed tags — lowercase only for matching
+const ALLOWED_TAGS = ["headshots", "scenery", "events", "portraits"];
+
 exports.handler = async (event) => {
-  // ✅ Handle CORS preflight
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
@@ -29,7 +31,6 @@ exports.handler = async (event) => {
     };
   }
 
-  // ✅ Handle GET: fetch live gallery from Cloudinary
   if (event.httpMethod === "GET") {
     try {
       const results = await cloudinary.search
@@ -65,7 +66,6 @@ exports.handler = async (event) => {
     }
   }
 
-  // ✅ Reject unsupported methods
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
@@ -77,7 +77,6 @@ exports.handler = async (event) => {
     };
   }
 
-  // ✅ Handle POST: file upload
   const buffer = Buffer.from(
     event.body,
     event.isBase64Encoded ? "base64" : "utf8"
@@ -116,11 +115,25 @@ exports.handler = async (event) => {
       }
 
       try {
-        const tagsArray = fields.tags
-          ? fields.tags.split(",").map((t) => t.trim())
+        // ✅ Normalize and validate tags
+        let tagsArray = fields.tags
+          ? fields.tags
+              .split(",")
+              .map((t) => t.trim().toLowerCase())
+              .filter((tag) => ALLOWED_TAGS.includes(tag))
           : [];
 
-        // ✅ Upload to Cloudinary with tags + context
+        if (tagsArray.length === 0) {
+          return resolve({
+            statusCode: 400,
+            headers: { "Access-Control-Allow-Origin": "*" },
+            body: JSON.stringify({
+              error:
+                "No valid tags provided. Allowed tags: headshots, scenery, events, portraits",
+            }),
+          });
+        }
+
         const result = await cloudinary.uploader.upload(tempFilePath, {
           folder: "seegraysvision_uploads",
           tags: tagsArray,
@@ -132,7 +145,6 @@ exports.handler = async (event) => {
           },
         });
 
-        // ✅ Reload to ensure tags/context persisted
         const reloaded = await cloudinary.api.resource(result.public_id, {
           resource_type: "image",
           tags: true,

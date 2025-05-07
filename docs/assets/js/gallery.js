@@ -21,7 +21,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const photosToShow = normalizedTag
       ? allPhotos.filter((photo) => {
           if (!Array.isArray(photo.tags)) return false;
-          return photo.tags.some((tag) => tag.toLowerCase() === normalizedTag);
+
+          return photo.tags.some((tag) => {
+            if (typeof tag !== "string") return false;
+            return tag.toLowerCase() === normalizedTag;
+          });
         })
       : [];
 
@@ -41,7 +45,9 @@ document.addEventListener("DOMContentLoaded", function () {
       const item = document.createElement("div");
       item.className = "gallery-item clean";
 
-      const tagsDisplay = photo.tags.join(", ");
+      const tagsDisplay = Array.isArray(photo.tags)
+        ? photo.tags.join(", ")
+        : "";
 
       item.innerHTML = `
         <div class="img-wrapper">

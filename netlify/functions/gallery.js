@@ -116,9 +116,14 @@ exports.handler = async (event) => {
       }
 
       try {
+        const tagsArray = fields.tags
+          ? fields.tags.split(",").map((t) => t.trim())
+          : [];
+
+        // ✅ Upload to Cloudinary with tags + context
         const result = await cloudinary.uploader.upload(tempFilePath, {
           folder: "seegraysvision_uploads",
-          tags: fields.tags ? fields.tags.split(",").map((t) => t.trim()) : [],
+          tags: tagsArray,
           context: {
             custom: {
               title: fields.title || "",
@@ -127,13 +132,20 @@ exports.handler = async (event) => {
           },
         });
 
+        // ✅ Reload to ensure tags/context persisted
+        const reloaded = await cloudinary.api.resource(result.public_id, {
+          resource_type: "image",
+          tags: true,
+          context: true,
+        });
+
         const photoEntry = {
-          public_id: result.public_id,
-          url: result.secure_url,
-          title: fields.title || "",
-          tags: fields.tags ? fields.tags.split(",").map((t) => t.trim()) : [],
-          description: fields.description || "",
-          uploaded_at: result.created_at,
+          public_id: reloaded.public_id,
+          url: reloaded.secure_url,
+          title: reloaded.context?.custom?.title || "",
+          tags: reloaded.tags || [],
+          description: reloaded.context?.custom?.description || "",
+          uploaded_at: reloaded.created_at,
         };
 
         resolve({

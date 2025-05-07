@@ -14,7 +14,6 @@ const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
 const isDev = process.env.CONTEXT === "dev";
 const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
 
-// ✅ Allowed tags (lowercase for consistency)
 const ALLOWED_TAGS = ["headshots", "scenery", "events", "portraits"];
 
 exports.handler = async (event) => {
@@ -79,7 +78,6 @@ exports.handler = async (event) => {
       }
 
       try {
-        // ✅ Normalize and validate tags
         let tagsArray = fields.tags
           ? fields.tags
               .split(",")
@@ -111,18 +109,21 @@ exports.handler = async (event) => {
           },
         });
 
-        console.log("✅ Cloudinary upload result:", {
-          public_id: result.public_id,
-          tags: result.tags,
+        console.log("✅ Upload completed. Fetching reloaded metadata...");
+
+        const reloaded = await cloudinary.api.resource(result.public_id, {
+          resource_type: "image",
+          tags: true,
+          context: true,
         });
 
         const photoEntry = {
-          public_id: result.public_id,
-          url: result.secure_url,
-          title: fields.title || "",
-          tags: tagsArray,
-          description: fields.description || "",
-          uploaded_at: result.created_at,
+          public_id: reloaded.public_id,
+          url: reloaded.secure_url,
+          title: reloaded.context?.custom?.title || "",
+          tags: reloaded.tags || [],
+          description: reloaded.context?.custom?.description || "",
+          uploaded_at: reloaded.created_at,
         };
 
         if (isDev) {
@@ -138,6 +139,8 @@ exports.handler = async (event) => {
             console.warn("⚠️ Failed to update photos.json:", metaErr.message);
           }
         }
+
+        console.log("✅ Final photo entry:", photoEntry);
 
         resolve({
           statusCode: 200,

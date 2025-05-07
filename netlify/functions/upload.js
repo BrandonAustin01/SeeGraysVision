@@ -1,12 +1,9 @@
-// upload.js
-
 const cloudinary = require("cloudinary").v2;
 const Busboy = require("busboy");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-// Cloudinary config from env
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -17,8 +14,10 @@ const UPLOAD_SECRET = process.env.UPLOAD_SECRET;
 const isDev = process.env.CONTEXT === "dev";
 const metadataPath = path.join(__dirname, "../../docs/data/photos.json");
 
+// ✅ Allowed tags (lowercase for consistency)
+const ALLOWED_TAGS = ["headshots", "scenery", "events", "portraits"];
+
 exports.handler = async (event) => {
-  // Handle preflight
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
@@ -68,6 +67,8 @@ exports.handler = async (event) => {
     });
 
     busboy.on("finish", async () => {
+      console.log("📥 Received fields:", fields);
+
       if (fields.uploadKey !== UPLOAD_SECRET) {
         console.warn("🛑 Unauthorized upload attempt.");
         return resolve({
@@ -78,12 +79,31 @@ exports.handler = async (event) => {
       }
 
       try {
+        // ✅ Normalize and validate tags
+        let tagsArray = fields.tags
+          ? fields.tags
+              .split(",")
+              .map((t) => t.trim().toLowerCase())
+              .filter((tag) => ALLOWED_TAGS.includes(tag))
+          : [];
+
+        console.log("🏷️ Normalized tags:", tagsArray);
+
+        if (tagsArray.length === 0) {
+          return resolve({
+            statusCode: 400,
+            headers: { "Access-Control-Allow-Origin": "*" },
+            body: JSON.stringify({
+              error:
+                "No valid tags provided. Allowed tags: headshots, scenery, events, portraits",
+            }),
+          });
+        }
+
         const result = await cloudinary.uploader.upload(tempFilePath, {
           folder: "seegraysvision_uploads",
-          tags: fields.tags ? fields.tags.split(",").map((t) => t.trim()) : [],
+          tags: tagsArray,
           context: {
-            alt: fields.title || "",
-            caption: fields.description || "",
             custom: {
               title: fields.title || "",
               description: fields.description || "",
@@ -91,11 +111,16 @@ exports.handler = async (event) => {
           },
         });
 
+        console.log("✅ Cloudinary upload result:", {
+          public_id: result.public_id,
+          tags: result.tags,
+        });
+
         const photoEntry = {
           public_id: result.public_id,
           url: result.secure_url,
           title: fields.title || "",
-          tags: fields.tags ? fields.tags.split(",").map((t) => t.trim()) : [],
+          tags: tagsArray,
           description: fields.description || "",
           uploaded_at: result.created_at,
         };

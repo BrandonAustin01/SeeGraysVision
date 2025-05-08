@@ -43,8 +43,13 @@ exports.handler = async (event) => {
     const photos = results.resources.map((res) => ({
       public_id: res.public_id,
       url: res.secure_url,
-      title: res.context?.custom?.title || "",
-      description: res.context?.custom?.description || "",
+      title:
+        res.context?.custom?.title ||
+        res.context?.caption ||
+        res.context?.alt ||
+        "",
+      description:
+        res.context?.custom?.description || res.context?.caption || "",
       tags: res.tags || [],
       uploaded_at: res.created_at,
     }));

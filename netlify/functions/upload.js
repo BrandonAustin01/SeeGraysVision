@@ -102,6 +102,8 @@ exports.handler = async (event) => {
           folder: "seegraysvision_uploads",
           tags: tagsArray,
           context: {
+            alt: fields.title || "",
+            caption: fields.description || "",
             custom: {
               title: fields.title || "",
               description: fields.description || "",

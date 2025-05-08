@@ -35,6 +35,8 @@ exports.handler = async (event) => {
     const results = await cloudinary.search
       .expression("folder:seegraysvision_uploads")
       .sort_by("created_at", "desc")
+      .with_field("context")
+      .with_field("tags")
       .max_results(100)
       .execute();
 
@@ -48,6 +50,7 @@ exports.handler = async (event) => {
     }));
 
     console.log("📦 Loaded photos from Cloudinary:", photos.length);
+    console.log("📸 Sample photo:", photos[0]);
 
     return {
       statusCode: 200,

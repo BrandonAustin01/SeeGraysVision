@@ -1126,3 +1126,13 @@ button.danger-btn {
 button.danger-btn:hover {
   background-color: #c62828;
 }
+
+/* === Pricing === */
+
+.price {
+  color: var(--highlight);
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin: 0.35rem 0;
+  display: block;
+}
